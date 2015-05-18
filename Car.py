@@ -1,27 +1,46 @@
-__author__ = 'alfredo'
 import simpy
+import random
+from Graph import Graph
+from Node import Node, NodeType
+
+AVG_SPEED = 100
+SPEED_SIGMA = 20
 
 class Car(object):
-    def __init__(self, env):
+    def __init__(self, env, carId, position, graph, startTime):
         self.env = env
-        # Start the run process everytime an instance is created.
-        self.action = env.process(self.run())
+        self.startTime = startTime
+        self.carId = carId
+        self.speed = random.gauss(AVG_SPEED, SPEED_SIGMA)
+        self.position = position
+        self.graph = graph
+        self.process = env.process(self.simulate(env))
 
-    def run(self):
+    def simulate(self, env):
+       
+        yield self.env.timeout(self.startTime)
+
         while True:
-            print('Start parking and charging at %d' % self.env.now)
-            charge_duration = 5
-            # We may get interrupted while charging the battery
-            try:
-                yield self.env.process(self.charge(charge_duration))
-            except simpy.Interrupt:
-             # When we received an interrupt, we stop charing and
-             # switch to the "driving" state
-                print('Was interrupted. Hope, the battery is full enough ')
+            if self.position.nodeType == NodeType.sensor:
+                print "Post de auto {0}, nodo {1}, time {2}".format(self.carId, self.position.nodeId, self.env.now)
+                arc = self.position.arcs[0]
+                yield self.env.timeout(self.calcNextEventTime(arc))
+                self.position = arc.nodeB
 
-            print('Start driving at %d' % self.env.now)
-            trip_duration = 2
-            yield self.env.timeout(trip_duration)
+            elif self.position.nodeType == NodeType.fork:
+                print "Fork de auto {0}, nodo {1}, time {2}".format(self.carId, self.position.nodeId, self.env.now)
+                arcs = self.position.arcs
+                arc = arcs[random.randint(0,len(arcs)-1)]
+                yield self.env.timeout(self.calcNextEventTime(arc))
+                self.position = arc.nodeB
 
-    def charge(self, duration):
-        yield self.env.timeout(duration)
+            elif self.position.nodeType == NodeType.finish:
+                break
+
+
+    def calcNextEventTime(self, arc):
+        return (1 - arc.cost) * self.speed
+
+        
+
+   
