@@ -21,5 +21,4 @@ bcs = simpy.Resource(env, capacity=2)
 
 for i in range(4):
     env.process(car(env, 'Car %d' % i, bcs, i*2, 5))
-
 env.run()

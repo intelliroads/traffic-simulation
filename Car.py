@@ -22,13 +22,13 @@ class Car(object):
 
         while True:
             if self.position.nodeType == NodeType.sensor:
-                print "Post de auto {0}, nodo {1}, time {2}".format(self.carId, self.position.nodeId, self.env.now)
+                print "Post of car {0}, node {1}, time {2}".format(self.carId, self.position.nodeId, self.env.now)
                 arc = self.position.arcs[0]
                 yield self.env.timeout(self.calcNextEventTime(arc))
                 self.position = arc.nodeB
 
             elif self.position.nodeType == NodeType.fork:
-                print "Fork de auto {0}, nodo {1}, time {2}".format(self.carId, self.position.nodeId, self.env.now)
+                print "Fork of car {0}, node {1}, time {2}".format(self.carId, self.position.nodeId, self.env.now)
                 arcs = self.position.arcs
                 arc = arcs[random.randint(0,len(arcs)-1)]
                 yield self.env.timeout(self.calcNextEventTime(arc))
@@ -37,9 +37,9 @@ class Car(object):
             elif self.position.nodeType == NodeType.finish:
                 break
 
-
     def calcNextEventTime(self, arc):
-        return (1 - arc.cost) * self.speed
+        """ Calculate the time until next node, recalculating the speed and the distance of the arc. """
+        return arc.distance / (1 - arc.cost) * self.speed
 
         
 

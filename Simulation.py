@@ -4,10 +4,10 @@ from Car import Car
 import random
 import simpy
 
-NUM_CARS = 10000
+NUM_CARS = 100
 
 
-def createGraph():
+def createGraph(env):
 	nodes = []
 
 	n1 = Node(1,NodeType.sensor)
@@ -36,24 +36,23 @@ def createGraph():
 	nodes.append(n11)
 	nodes.append(n12)
 
-	n1.addArc(n2,0)
-	n2.addArc(n3,0)
-	n3.addArc(n4,0)
-	n4.addArc(n5,0)
-	n4.addArc(n7,0)
-	n4.addArc(n5,0)
-	n5.addArc(n6,0)
-	n6.addArc(n9,0)
-	n7.addArc(n8,0)
-	n8.addArc(n9,0)
-	n9.addArc(n10,0)
-	n10.addArc(n11,0)
-	n11.addArc(n12,0)
+	n1.addArc(n2,0,0.5)
+	n2.addArc(n3,0,0.5)
+	n3.addArc(n4,0,0.5)
+	n4.addArc(n5,0,0.5)
+	n4.addArc(n7,0,0.5)
+	n4.addArc(n5,0,0.5)
+	n5.addArc(n6,0,0.5)
+	n6.addArc(n9,0,0.5)
+	n7.addArc(n8,0,0.5)
+	n8.addArc(n9,0,0.5)
+	n9.addArc(n10,0,0.5)
+	n10.addArc(n11,0,0.5)
+	n11.addArc(n12,0,0.5)
 
-	return Graph(nodes)
+	return Graph(nodes,env,100)
 
-graph = createGraph()
 env = simpy.Environment()
+graph = createGraph(env)
 cars = [Car(env, i, graph.getFirstNode(), graph, random.expovariate(0.001)) for i in range(NUM_CARS)]
-
 env.run(until = 10000)

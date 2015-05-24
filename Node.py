@@ -13,6 +13,6 @@ class Node(object):
 		self.nodeId = nodeId
 		self.arcs = []
 
-	def addArc(self, nodeB, cost):
-		self.arcs.append(Arc(self,nodeB, cost))
+	def addArc(self, nodeB, cost, distance):
+		self.arcs.append(Arc(self,nodeB, cost, distance))
 
