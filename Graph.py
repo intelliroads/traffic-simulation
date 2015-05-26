@@ -1,4 +1,5 @@
 from Node import Node
+from Arc import ArcType
 
 
 class Graph(object):
@@ -12,8 +13,16 @@ class Graph(object):
         return self.nodes[0]
 
     def recalculateCost(self,arc):
-        if(arc.cost != 1):
-            arc.cost += 0.01
+        if arc.type == ArcType.uninterrupted:
+            #Recalculate uninterrupted cost based on traffic theory
+            if(arc.cost != 1):
+                arc.cost += 0.01
+        elif arc.type == ArcType.toll:
+            #Recalculate interrupted cost based on queue theory
+            return
+        elif arc.type == ArcType.traffic_light:
+            #Recalculate interrupted cost based on queue theory
+            return
 
     def scheduleRecalculations(self):
         while True:

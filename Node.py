@@ -7,12 +7,11 @@ class NodeType(Enum):
 	finish = 3
 
 class Node(object):
-
 	def __init__(self, nodeId, nodeType):
 		self.nodeType = nodeType
 		self.nodeId = nodeId
 		self.arcs = []
 
-	def addArc(self, nodeB, cost, distance):
-		self.arcs.append(Arc(self,nodeB, cost, distance))
+	def addArc(self,arcType, nodeB, cost, distance):
+		self.arcs.append(Arc(arcType,self,nodeB, cost, distance))
 

@@ -39,7 +39,7 @@ class Car(object):
 
     def calcNextEventTime(self, arc):
         """ Calculate the time until next node, recalculating the speed and the distance of the arc. """
-        return arc.distance / (1 - arc.cost) * self.speed
+        return arc.distance / ((1 - arc.cost) * self.speed)
 
         
 

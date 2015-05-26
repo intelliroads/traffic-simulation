@@ -1,5 +1,6 @@
 from Graph import Graph
 from Node import Node, NodeType
+from Arc import ArcType
 from Car import Car
 import random
 import simpy
@@ -36,19 +37,19 @@ def createGraph(env):
 	nodes.append(n11)
 	nodes.append(n12)
 
-	n1.addArc(n2,0,0.5)
-	n2.addArc(n3,0,0.5)
-	n3.addArc(n4,0,0.5)
-	n4.addArc(n5,0,0.5)
-	n4.addArc(n7,0,0.5)
-	n4.addArc(n5,0,0.5)
-	n5.addArc(n6,0,0.5)
-	n6.addArc(n9,0,0.5)
-	n7.addArc(n8,0,0.5)
-	n8.addArc(n9,0,0.5)
-	n9.addArc(n10,0,0.5)
-	n10.addArc(n11,0,0.5)
-	n11.addArc(n12,0,0.5)
+	n1.addArc(ArcType.uninterrupted,n2,0,0.5)
+	n2.addArc(ArcType.uninterrupted,n3,0,0.5)
+	n3.addArc(ArcType.uninterrupted,n4,0,0.5)
+	n4.addArc(ArcType.uninterrupted,n5,0,0.5)
+	n4.addArc(ArcType.uninterrupted,n7,0,0.5)
+	n4.addArc(ArcType.uninterrupted,n5,0,0.5)
+	n5.addArc(ArcType.uninterrupted,n6,0,0.5)
+	n6.addArc(ArcType.uninterrupted,n9,0,0.5)
+	n7.addArc(ArcType.uninterrupted,n8,0,0.5)
+	n8.addArc(ArcType.uninterrupted,n9,0,0.5)
+	n9.addArc(ArcType.uninterrupted,n10,0,0.5)
+	n10.addArc(ArcType.uninterrupted,n11,0,0.5)
+	n11.addArc(ArcType.uninterrupted,n12,0,0.5)
 
 	return Graph(nodes,env,100)
 
