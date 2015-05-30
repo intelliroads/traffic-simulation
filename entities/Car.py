@@ -4,8 +4,8 @@ from entities.Arc import ArcType
 from Node import NodeType
 
 
-AVG_SPEED = 100
-SPEED_SIGMA = 20
+AVG_SPEED = 50
+SPEED_SIGMA = 5
 
 class Car(object):
     def __init__(self, env, carId, position, graph, startTime):
@@ -23,18 +23,19 @@ class Car(object):
         while True:
             if self.position.nodeType == NodeType.sensor:
                 print "Post of car {0}, node {1}, time {2}".format(self.carId, self.position.nodeId, self.env.now)
-                arc = self.position.arcs[0]
+                arc = self.position.outArcs[0]
                 yield self.env.timeout(self.calcNextEventTime(arc))
                 self.position = arc.nodeB
 
             elif self.position.nodeType == NodeType.fork:
                 print "Fork of car {0}, node {1}, time {2}".format(self.carId, self.position.nodeId, self.env.now)
-                arcs = self.position.arcs
+                arcs = self.position.outArcs
                 arc = arcs[random.randint(0,len(arcs)-1)]
                 yield self.env.timeout(self.calcNextEventTime(arc))
                 self.position = arc.nodeB
 
             elif self.position.nodeType == NodeType.finish:
+                print "Car {0} arrived at destination".format(self.carId)
                 break
 
     def calcNextEventTime(self, arc):

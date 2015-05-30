@@ -28,7 +28,7 @@ class Graph(object):
             yield self.env.timeout(self.recalculationStep)
             print "Recalculation of costs, time {0}".format(self.env.now)
             for node in self.nodes:
-                for arc in node.arcs:
+                for arc in node.outArcs:
                     self.recalculateCost(arc)
 
 
