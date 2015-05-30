@@ -1,5 +1,4 @@
-from Node import Node
-from Arc import ArcType
+from entities.Arc import ArcType
 
 
 class Graph(object):

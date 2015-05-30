@@ -1,6 +1,8 @@
 __author__ = 'alfredo'
 import simpy
-from Car import Car
+
+from entities import Car
+
 
 """
 Simple simpy example

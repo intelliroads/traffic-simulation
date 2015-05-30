@@ -1,11 +1,14 @@
-from Graph import Graph
-from Node import Node, NodeType
-from Arc import ArcType
-from Car import Car
 import random
+
 import simpy
 
-NUM_CARS = 100
+from entities.Graph import Graph
+from entities.Node import Node, NodeType
+from entities.Arc import ArcType
+from entities.Car import Car
+
+
+NUM_CARS = 100000
 
 
 def createGraph(env):
