@@ -1,4 +1,6 @@
 **TODO**
 
-* Evento de recalcular costos de rutas
-* Funcionalidad para que un auto tome una decision basada en costos mientras conduce
+**Load graph from database.
+**Get flow from API.
+**Post readings using the API.
+**Polish recalculation event. 
