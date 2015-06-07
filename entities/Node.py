@@ -35,6 +35,3 @@ class TrafficLightNode(Node):
         super.__init__(self, nodeId, nodeType)
         self.effective_red_time = effective_red_time
         self.saturation_rate = saturation_rate
-
-
-

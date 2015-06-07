@@ -8,7 +8,7 @@ from entities.Arc import ArcType
 from entities.Car import Car
 
 
-NUM_CARS = 100000
+NUM_CARS = 100
 
 
 def createGraph(env):
