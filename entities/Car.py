@@ -4,7 +4,7 @@ from entities.Arc import ArcType
 from Node import NodeType
 from datetime import datetime,timedelta
 
-
+DETECTOR_DISTANCE = 1.5
 AVG_SPEED = 50
 SPEED_SIGMA = 5
 
@@ -26,7 +26,9 @@ class Car(object):
                 print "Post of car {0}, node {1}, time {2}".format(self.carId, self.position.nodeId, self.env.now)
                 arc = self.position.outArcs[0]
                 new_speed = (1-arc.cost) * self.speed
-                print ApiInterface.post_reading(arc.nodeB.nodeId, new_speed,  ApiInterface.DETECTOR_DISTANCE / new_speed)    
+                period = DETECTOR_DISTANCE / new_speed
+                print period
+                ApiInterface.post_reading(arc.nodeB.nodeId, new_speed, period)
                 yield self.env.timeout(self.calcNextEventTime(arc))
                 self.position = arc.nodeB
 
@@ -85,4 +87,3 @@ class Car(object):
            effective_red_time (float): effective red time in seconds within a traffic light cycle.
         """
         return saturation_rate * effective_red_time / (saturation_rate - total_arrival_rate)
-

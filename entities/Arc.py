@@ -13,6 +13,3 @@ class Arc(object):
         self.cost = cost
         self.distance = distance
         self.type = arcType
-
-
-

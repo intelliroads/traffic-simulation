@@ -30,7 +30,3 @@ class Graph(object):
             for node in self.nodes:
                 for arc in node.outArcs:
                     self.recalculateCost(arc)
-
-
-
-		

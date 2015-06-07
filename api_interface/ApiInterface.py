@@ -3,11 +3,9 @@ import requests
 from api_interface.Reading import Reading
 
 class ApiInterface(object):
-    BASE_URL = "http://192.168.1.141:3000/"
+    BASE_URL = "http://localhost:3000/"
     POST_READING = BASE_URL + "readings"
-    
-    #dummy 
-    DETECTOR_DISTANCE = 1.5 
+
 
     @staticmethod
     def get(url):
@@ -16,9 +14,7 @@ class ApiInterface(object):
 
     @staticmethod
     def post(url, payload):
-        r = requests.post(url, data=payload)
-        print r.text
-        return r
+        return requests.post(url, data=payload)
 
 
     @staticmethod
