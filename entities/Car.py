@@ -2,9 +2,11 @@ import random
 from api_interface.ApiInterface import ApiInterface
 from entities.Arc import ArcType
 from Node import NodeType
+from Graph import Graph
 from datetime import datetime,timedelta
 
 DETECTOR_DISTANCE = 1.5
+ROUTE_MAX_SERVICE = 650
 AVG_SPEED = 50
 SPEED_SIGMA = 5
 
@@ -23,36 +25,40 @@ class Car(object):
 
         while True:
             if self.position.nodeType == NodeType.sensor:
-                print "Post of car {0}, node {1}, time {2}".format(self.carId, self.position.nodeId, self.env.now)
+                print "Post of car {0}, route {1}, kilometer {2}, time {3}".format(self.carId, self.position.route,self.position.kilometer, self.env.now)
                 arc = self.position.outArcs[0]
                 new_speed = (1-arc.cost) * self.speed
-                period = DETECTOR_DISTANCE / new_speed
-                print period
+                period = DETECTOR_DISTANCE / self.speed
                 ApiInterface.post_reading(arc.nodeB.nodeId, new_speed, period)
-                yield self.env.timeout(self.calcNextEventTime(arc))
-                self.position = arc.nodeB
-
+            elif self.position.nodeType == NodeType.traffic_light or self.position.nodeType == NodeType.toll:
+                print "Interrupted spot reached by car {0}, time {1}".format(self.carId, self.env.now)
+                arc = self.position.outArcs[0]
+            elif self.position.nodeType == NodeType.ordinary:
+                print "Car {0} arrived at location {1}".format(self.carId, arc.nodeB.route)
+                arc = arcs[0]
             elif self.position.nodeType == NodeType.fork:
                 print "Fork of car {0}, node {1}, time {2}".format(self.carId, self.position.nodeId, self.env.now)
                 arcs = self.position.outArcs
                 arc = arcs[random.randint(0,len(arcs)-1)]
-                yield self.env.timeout(self.calcNextEventTime(arc))
-                self.position = arc.nodeB
-
             elif self.position.nodeType == NodeType.finish:
                 print "Car {0} arrived at destination".format(self.carId)
                 break
+            yield self.env.timeout(self.calcNextEventTime(arc))
+            if(arc.type == ArcType.uninterrupted):
+                Graph.recalculateCost(arc)
+            self.position = arc.nodeB
+
 
     def calcNextEventTime(self, arc):
         """ Calculate the time until next node, recalculating the speed and the distance of the arc. """
-        if(arc.type == ArcType.uninterrupted):
+        if arc.type == ArcType.uninterrupted:
             time = self.average_time_uninterrupted(arc.distance, arc.cost, self.speed)
-        elif(arc.type == ArcType.traffic_light):
-            flow = 0 #GET FLOW FROM API
-            time = self.average_time_in_tls(flow,arc.nodeA.saturation_rate,arc.nodeA.effective_red_time)
+        elif arc.type == ArcType.traffic_light:
+            flow = ApiInterface.get_dummy_volume(arc.nodeB.route)
+            time = self.average_time_in_tls(flow,arc.nodeA.duration,arc.nodeA.frequency)
         else:
-            flow = 0 #GET FLOW FROM API
-            time = self.average_time_in_toll(flow, arc.nodeA.windows, arc.nodeA.service_rate)
+            flow = ApiInterface.get_dummy_volume(arc.nodeB.route)
+            time = self.average_time_in_toll(flow, arc.nodeA.servers, arc.nodeA.service_rate)
         return time;
 
 
@@ -77,13 +83,9 @@ class Car(object):
         return time_in_system
 
 
-    def average_time_in_tls(self, total_arrival_rate, saturation_rate, effective_red_time):
+    def average_time_in_tls(self, total_arrival_rate,red_light_duration, red_light_frequency):
         """
          Calculates the average time in a traffic light signal using vehicular flow theory.
-
-         Args:
-           total_arrival_rate (float): total arrival rate of de route, combining the flow of each lane. Expressed as vehicles/hour.
-           saturation_rate(float): max service rate of the lane, it is reached when the traffic light goes green.
-           effective_red_time (float): effective red time in seconds within a traffic light cycle.
         """
-        return saturation_rate * effective_red_time / (saturation_rate - total_arrival_rate)
+        effective_red_light = red_light_duration / (red_light_duration + red_light_frequency)
+        return ROUTE_MAX_SERVICE * effective_red_light / (ROUTE_MAX_SERVICE - total_arrival_rate)

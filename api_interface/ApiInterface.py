@@ -1,15 +1,24 @@
 import json
 import requests
 from api_interface.Reading import Reading
+from api_interface.Spot import Spot
+from api_interface.Sensor import Sensor
 
 class ApiInterface(object):
     BASE_URL = "http://localhost:3000/"
-    POST_READING = BASE_URL + "readings"
+    READING = BASE_URL + "readings"
+    SPOTS = BASE_URL + "spots"
+    SENSORS = BASE_URL + "sensors"
+    DUMMY_SPEED = BASE_URL + "roads/{0}/mean-time-speed-dummy"
+    DUMMY_VOLUME = BASE_URL +"roads/{0}/volume-dummy"
 
 
     @staticmethod
-    def get(url):
-        return requests.get(url).json()
+    def get(url, payload):
+        if payload != None:
+            return requests.get(url, params = payload).json()
+        else:
+            return requests.get(url).json()
 
 
     @staticmethod
@@ -19,4 +28,30 @@ class ApiInterface(object):
 
     @staticmethod
     def post_reading(sensor_id, speed, period):
-        return ApiInterface.post(ApiInterface.POST_READING, Reading(sensor_id, speed, period).toJSON())
+        return ApiInterface.post(ApiInterface.READING, Reading(sensor_id, speed, period).toJSON())
+
+    @staticmethod
+    def get_all_spots():
+        spots = []
+        response = ApiInterface.get(ApiInterface.SPOTS, None)
+        for spotJson in response:
+            spots.append(Spot(spotJson))
+        return spots
+
+    @staticmethod
+    def get_all_sensors():
+        sensors = []
+        response = ApiInterface.get(ApiInterface.SENSORS, None)
+        for sensorJson in response:
+            sensors.append(Sensor(sensorJson))
+        return sensors
+
+    @staticmethod
+    def get_dummy_speed(route_id):
+        payload = {'fromKm': '0', 'toKm': '32', 'fromTime': '32', 'toTime': '40'}
+        return ApiInterface.get(ApiInterface.DUMMY_SPEED.format(route_id),payload)
+
+    @staticmethod
+    def get_dummy_volume(route_id):
+        payload = {'fromKm': '0', 'toKm': '32', 'fromTime': '32', 'toTime': '40'}
+        return ApiInterface.get(ApiInterface.DUMMY_VOLUME.format(route_id),payload)
