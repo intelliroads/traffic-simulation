@@ -6,7 +6,7 @@ from entities.Graph import Graph
 from entities.Car import Car
 
 
-NUM_CARS = 100
+NUM_CARS = 1009
 
 
 def createGraph(env):

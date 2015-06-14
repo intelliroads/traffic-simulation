@@ -25,19 +25,19 @@ class Car(object):
 
         while True:
             if self.position.nodeType == NodeType.sensor:
-                print "Post of car {0}, route {1}, kilometer {2}, time {3}".format(self.carId, self.position.route,self.position.kilometer, self.env.now)
+                #print "Post of car {0}, route {1}, kilometer {2}, time {3}".format(self.carId, self.position.route,self.position.kilometer, self.env.now)
                 arc = self.position.outArcs[0]
                 new_speed = (1-arc.cost) * self.speed
                 period = DETECTOR_DISTANCE / self.speed
                 ApiInterface.post_reading(arc.nodeB.nodeId, new_speed, period)
             elif self.position.nodeType == NodeType.traffic_light or self.position.nodeType == NodeType.toll:
-                print "Interrupted spot reached by car {0}, time {1}".format(self.carId, self.env.now)
+                #print "Interrupted spot reached by car {0}, time {1}".format(self.carId, self.env.now)
                 arc = self.position.outArcs[0]
             elif self.position.nodeType == NodeType.ordinary:
-                print "Car {0} arrived at location {1}".format(self.carId, arc.nodeB.route)
+                #print "Car {0} arrived at location {1}".format(self.carId, arc.nodeB.route)
                 arc = arcs[0]
             elif self.position.nodeType == NodeType.fork:
-                print "Fork of car {0}, node {1}, time {2}".format(self.carId, self.position.nodeId, self.env.now)
+                #print "Fork of car {0}, node {1}, time {2}".format(self.carId, self.position.nodeId, self.env.now)
                 arcs = self.position.outArcs
                 arc = arcs[random.randint(0,len(arcs)-1)]
             elif self.position.nodeType == NodeType.finish:
