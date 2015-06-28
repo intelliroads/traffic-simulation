@@ -7,6 +7,7 @@ class Spot(object):
         self.id = spotJSON["_id"]
         self.type = spotJSON["type"]
         self.roads = []
+        self.location = spotJSON["location"]
         self.toll = None;
         self.red_light = None;
         for road in spotJSON["roads"]:
