@@ -55,7 +55,7 @@ class Graph(object):
                         #If the node is interrupted we need the start and end of itself
                         node = TollNode(element.id, NodeType.toll, element.toll.number_of_servers, element.toll.service_rate,element.roads[0].id ,element.roads[0].kilometer )
                         nodes.append(node)
-                        last_node.addArc(ArcType.toll, node, 0,(node.kilometer - last_node.kilometer))
+                        last_node.addArc(ArcType.uninterrupted, node, 0,(node.kilometer - last_node.kilometer))
                         end_of_toll = copy.copy(node)
                         last_node = node
                         node = end_of_toll
@@ -64,7 +64,7 @@ class Graph(object):
                         #If the node is interrupted we need the start and end of itself
                         node = TrafficLightNode(element.id, NodeType.traffic_light,element.red_light.duration, element.red_light.frequency ,element.roads[0].id ,element.roads[0].kilometer)
                         nodes.append(node)
-                        last_node.addArc(ArcType.traffic_light, node, 0,(node.kilometer - last_node.kilometer))
+                        last_node.addArc(ArcType.uninterrupted, node, 0,(node.kilometer - last_node.kilometer))
                         end_of_tl = copy.copy(node)
                         last_node = node
                         node = end_of_tl
@@ -91,6 +91,9 @@ class Graph(object):
 
     def getFirstNode(self):
         return self.nodes[0]
+
+    def getLastNode(self):
+        return self.nodes[len(self.nodes) -1]
 
     @staticmethod
     def recalculateCost(arc):

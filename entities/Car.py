@@ -3,22 +3,31 @@ from api_interface.ApiInterface import ApiInterface
 from entities.Arc import ArcType
 from Node import NodeType
 from Graph import Graph
-from datetime import datetime,timedelta
+from enum import Enum
+import costs.Dijkstra
 
 DETECTOR_DISTANCE = 1.5
 ROUTE_MAX_SERVICE = 650
 AVG_SPEED = 50
 SPEED_SIGMA = 5
 
+class CarType(Enum):
+    random = 1
+    intelligent = 2
+
 class Car(object):
-    def __init__(self, env, carId, position, graph, startTime):
+    def __init__(self, env, carId, position, graph, startTime, type, destination = None):
         self.env = env
         self.startTime = startTime
+        self.travelTime = 0
         self.carId = carId
         self.speed = random.gauss(AVG_SPEED, SPEED_SIGMA)
         self.position = position
         self.graph = graph
         self.process = env.process(self.simulate(env))
+        self.type = type
+        self.destination = destination
+    
 
     def simulate(self, env):
         yield self.env.timeout(self.startTime)
@@ -39,17 +48,30 @@ class Car(object):
             elif self.position.nodeType == NodeType.fork:
                 #print "Fork of car {0}, node {1}, time {2}".format(self.carId, self.position.nodeId, self.env.now)
                 arcs = self.position.outArcs
-                arc = arcs[random.randint(0,len(arcs)-1)]
-            elif self.position.nodeType == NodeType.finish:
+                if self.type == CarType.random:
+                    arc = arcs[random.randint(0,len(arcs)-1)]
+                elif self.type == CarType.intelligent:
+                    #Calculate shortest path based on graphs costs.
+                    path = costs.Dijkstra.dijkstra(self)
+                    destinationNode = path[1]
+                    for outArc in self.position.outArcs:
+                        if outArc.nodeB.nodeId == destinationNode.nodeId:
+                            arc = outArc
+                            break
+            elif self.position == self.destination:
                 print "Car {0} arrived at destination".format(self.carId)
+                self.travelTime = env.now() - self.startTime
                 break
-            yield self.env.timeout(self.calcNextEventTime(arc))
+            elif self.position.nodeType == NodeType.finish:
+                print "Car {0} out of map".format(self.carId)
+                break
+            yield self.env.timeout(self.calc_next_event_time(arc))
             if(arc.type == ArcType.uninterrupted):
                 Graph.recalculateCost(arc)
             self.position = arc.nodeB
 
 
-    def calcNextEventTime(self, arc):
+    def calc_next_event_time(self, arc):
         """ Calculate the time until next node, recalculating the speed and the distance of the arc. """
         if arc.type == ArcType.uninterrupted:
             time = self.average_time_uninterrupted(arc.distance, arc.cost, self.speed)
@@ -58,7 +80,7 @@ class Car(object):
             time = self.average_time_in_tls(flow,arc.nodeA.duration,arc.nodeA.frequency)
         else:
             flow = ApiInterface.get_dummy_volume(arc.nodeB.route)
-            time = self.average_time_in_toll(flow, arc.nodeA.servers, arc.nodeA.service_rate)
+            time = self.average_time_in_toll(flow, arc.nodeB.servers, arc.nodeB.service_rate)
         return time;
 
 

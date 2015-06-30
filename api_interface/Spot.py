@@ -1,7 +1,8 @@
-from Road import Road
-from RedLight import RedLight
-from Toll import Toll
+from api_interface.Road import Road
+from api_interface.RedLight import RedLight
+from api_interface.Toll import Toll
 import unicodedata
+
 class Spot(object):
     def __init__(self, spotJSON):
         self.id = spotJSON["_id"]
