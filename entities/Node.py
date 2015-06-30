@@ -13,12 +13,14 @@ class NodeType(Enum):
 
 
 class Node(object):
-    def __init__(self, nodeId, nodeType, route, kilometer):
+    def __init__(self, nodeId, nodeType, route, kilometer, x, y):
         self.nodeType = nodeType
         self.nodeId = nodeId
         self.outArcs = []
         self.route = route
         self.kilometer = kilometer
+        self.x = x
+        self.y = y
 
     def addArc(self, arcType, nodeB, cost, distance):
         #Add outer arc from current node to destination node
@@ -29,14 +31,14 @@ class Node(object):
 
 
 class TollNode(Node):
-    def __init__(self, nodeId, nodeType, servers, service_rate, route, kilometer):
-        super(TollNode, self).__init__(nodeId, nodeType, route, kilometer)
+    def __init__(self, nodeId, nodeType, servers, service_rate, route, kilometer, x, y):
+        super(TollNode, self).__init__(nodeId, nodeType, route, kilometer,x, y)
         self.servers = servers
         self.service_rate = service_rate
 
 
 class TrafficLightNode(Node):
-    def __init__(self, nodeId, nodeType, duration, frequency, route,kilometer):
-        super(TrafficLightNode, self).__init__(nodeId, nodeType,route, kilometer)
+    def __init__(self, nodeId, nodeType, duration, frequency, route,kilometer,x, y):
+        super(TrafficLightNode, self).__init__(nodeId, nodeType,route, kilometer, x, y)
         self.duration = duration
         self.frequency = frequency

@@ -6,8 +6,6 @@ from costs.CostCalculator import CostCalculator
 import unicodedata
 import copy
 
-
-
 class Graph(object):
     def __init__(self, env, recalculationStep):
         self.env = env
@@ -48,12 +46,14 @@ class Graph(object):
                     if unicodedata.normalize('NFC', element.type) == unicodedata.normalize('NFC', u'fork'):
                         node = next((x for x in forkNodes if x.nodeId == element.id),None)
                         if node == None:
-                            node = Node(element.id, NodeType.fork, element.roads[0].id ,element.roads[0].kilometer)
+                            location = element.location.split(',')
+                            node = Node(element.id, NodeType.fork, element.roads[0].id ,element.roads[0].kilometer, location[0], location[1])
                             nodes.append(node)
                             forkNodes.append(node)
                     elif unicodedata.normalize('NFC', element.type) == unicodedata.normalize('NFC', u'toll'):
                         #If the node is interrupted we need the start and end of itself
-                        node = TollNode(element.id, NodeType.toll, element.toll.number_of_servers, element.toll.service_rate,element.roads[0].id ,element.roads[0].kilometer )
+                        location = element.location.split(',')
+                        node = TollNode(element.id, NodeType.toll, element.toll.number_of_servers, element.toll.service_rate,element.roads[0].id ,element.roads[0].kilometer, location[0], location[1] )
                         nodes.append(node)
                         last_node.addArc(ArcType.uninterrupted, node, 0,(node.kilometer - last_node.kilometer))
                         end_of_toll = copy.copy(node)
@@ -62,7 +62,8 @@ class Graph(object):
                         nodes.append(node)
                     elif unicodedata.normalize('NFC', element.type) == unicodedata.normalize('NFC', u'trafficLight'):
                         #If the node is interrupted we need the start and end of itself
-                        node = TrafficLightNode(element.id, NodeType.traffic_light,element.red_light.duration, element.red_light.frequency ,element.roads[0].id ,element.roads[0].kilometer)
+                        location = element.location.split(',')
+                        node = TrafficLightNode(element.id, NodeType.traffic_light,element.red_light.duration, element.red_light.frequency ,element.roads[0].id ,element.roads[0].kilometer, location[0], location[1])
                         nodes.append(node)
                         last_node.addArc(ArcType.uninterrupted, node, 0,(node.kilometer - last_node.kilometer))
                         end_of_tl = copy.copy(node)
@@ -86,7 +87,7 @@ class Graph(object):
                     last_node.addArc(arc_type, node, 0,(node.kilometer - last_node.kilometer))
                 last_node = node
             # add Finish node to route
-            last_node.addArc(ArcType.uninterrupted, Node('finish '+ key, NodeType.finish, key, 9999), 0,0)
+            #last_node.addArc(ArcType.uninterrupted, Node('finish '+ key, NodeType.finish, key, 9999), 0,0)
         self.nodes = nodes
 
     def getFirstNode(self):
