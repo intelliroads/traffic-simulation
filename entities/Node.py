@@ -26,6 +26,9 @@ class Node(object):
         #Add outer arc from current node to destination node
         self.outArcs.append(Arc(arcType, self, nodeB, cost, distance))
 
+    def __repr__(self):
+        return self.nodeId
+
 
 class TollNode(Node):
     def __init__(self, nodeId, nodeType, servers, service_rate, route, kilometer, x, y):

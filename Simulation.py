@@ -1,14 +1,13 @@
 import random
 import sys
 import simpy
-
 from entities.Graph import Graph
-from entities.Car import Car
+
+from entities.Car import Car, CarType
 from PyQt4 import QtGui, QtCore
 from GUI import Drawer
 
-
-NUM_CARS = 1009
+NUM_CARS = 10
 
 
 def createGraph(env):
@@ -16,11 +15,10 @@ def createGraph(env):
 
 env = simpy.Environment()
 graph = createGraph(env)
+cars = [Car(env, i, graph.getFirstNode(), graph, random.expovariate(0.001),CarType.random) for i in range(NUM_CARS)]
 
 app = QtGui.QApplication(sys.argv)
 drawer = Drawer(graph)
-
-
 sys.exit(app.exec_())
 
 cars = [Car(env, i, graph.getFirstNode(), graph, random.expovariate(0.001)) for i in range(NUM_CARS)]
