@@ -3,20 +3,22 @@ import requests
 from api_interface.Reading import Reading
 from api_interface.Spot import Spot
 from api_interface.Sensor import Sensor
+import time
+
+current_milli_time = lambda: int(round(time.time() * 1000))
 
 class ApiInterface(object):
-    BASE_URL = "http://localhost:3000/"
+    BASE_URL = "http://127.0.0.1:3000/"
     READING = BASE_URL + "readings"
     SPOTS = BASE_URL + "spots"
     SENSORS = BASE_URL + "sensors"
-    DUMMY_SPEED = BASE_URL + "roads/{0}/mean-time-speed-dummy"
-    DUMMY_VOLUME = BASE_URL +"roads/{0}/volume-dummy"
-
+    SPEED = BASE_URL + "roads/{0}/mean-time-speed"
+    VOLUME = BASE_URL + "roads/{0}/volume"
 
     @staticmethod
     def get(url, payload):
         if payload != None:
-            return requests.get(url, params = payload).json()
+            return requests.get(url, params=payload).json()
         else:
             return requests.get(url).json()
 
@@ -47,11 +49,12 @@ class ApiInterface(object):
         return sensors
 
     @staticmethod
-    def get_dummy_speed(route_id):
+    def get_speed(route_id):
         payload = {'fromKm': '0', 'toKm': '32', 'fromTime': '32', 'toTime': '40'}
-        return ApiInterface.get(ApiInterface.DUMMY_SPEED.format(route_id),payload)
+        return  ApiInterface.get(ApiInterface.SPEED.format(route_id),payload)
+
 
     @staticmethod
-    def get_dummy_volume(route_id):
-        payload = {'fromKm': '0', 'toKm': '32', 'fromTime': '32', 'toTime': '40'}
-        return ApiInterface.get(ApiInterface.DUMMY_VOLUME.format(route_id),payload)
+    def get_volume(route_id):
+        payload = {'km': '32', 'fromTime': '32', 'toTime': '40'}
+        return ApiInterface.get(ApiInterface.VOLUME.format(route_id),payload)

@@ -23,6 +23,9 @@ class Node(object):
         self.y = y
 
     def addArc(self, arcType, nodeB, cost, distance):
+        # Distance is 0 when nodes belong to different routes
+        if self.route != nodeB.route:
+            distance = 0
         #Add outer arc from current node to destination node
         self.outArcs.append(Arc(arcType, self, nodeB, cost, distance))
 

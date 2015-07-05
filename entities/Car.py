@@ -8,7 +8,7 @@ import costs.Dijkstra
 
 DETECTOR_DISTANCE = 1.5
 ROUTE_MAX_SERVICE = 650
-AVG_SPEED = 50
+AVG_SPEED = 100
 SPEED_SIGMA = 5
 
 class CarType(Enum):
@@ -40,16 +40,24 @@ class Car(object):
                 period = DETECTOR_DISTANCE / self.speed
                 ApiInterface.post_reading(arc.nodeB.nodeId, new_speed, period)
             elif self.position.nodeType == NodeType.traffic_light or self.position.nodeType == NodeType.toll:
-                #print "Interrupted spot reached by car {0}, time {1}".format(self.carId, self.env.now)
+                print "Interrupted spot reached by car {0},route {1}, kilometer {2}, time {3}".format(self.carId,self.position.route,self.position.kilometer, self.env.now)
                 arc = self.position.outArcs[0]
             elif self.position.nodeType == NodeType.ordinary:
-                #print "Car {0} arrived at location {1}".format(self.carId, arc.nodeB.route)
+                print "Car {0} arrived at location {1}".format(self.carId, arc.nodeB.route)
                 arc = arcs[0]
             elif self.position.nodeType == NodeType.fork:
-                #print "Fork of car {0}, node {1}, time {2}".format(self.carId, self.position.nodeId, self.env.now)
+                print "Fork of car {0}, route {1}, kilometer {2}, time {3}".format(self.carId, self.position.route,self.position.kilometer, self.env.now)
                 arcs = self.position.outArcs
+
+                if len(arcs) == 0:
+                    print "Car {0} arrived at destination".format(self.carId)
+                    break
+
                 if self.type == CarType.random:
-                    arc = arcs[random.randint(0,len(arcs)-1)]
+                    if len(arcs) == 1:
+                        arc = arcs[0]
+                    else:
+                        arc = arcs[random.randint(0,len(arcs)-1)]
                 elif self.type == CarType.intelligent:
                     #Calculate shortest path based on graphs costs.
                     path = costs.Dijkstra.dijkstra(self)
@@ -59,15 +67,15 @@ class Car(object):
                             arc = outArc
                             break
             elif self.position == self.destination:
-                print "Car {0} arrived at destination".format(self.carId)
+                #print "Car {0} arrived at destination".format(self.carId)
                 self.travelTime = env.now() - self.startTime
                 break
             elif self.position.nodeType == NodeType.finish:
-                print "Car {0} out of map".format(self.carId)
+                #print "Car {0} out of map".format(self.carId)
                 break
             yield self.env.timeout(self.calc_next_event_time(arc))
             if(arc.type == ArcType.uninterrupted):
-                Graph.recalculateCost(arc)
+                self.graph.recalculateCost(arc)
             self.position = arc.nodeB
 
 
@@ -76,12 +84,13 @@ class Car(object):
         if arc.type == ArcType.uninterrupted:
             time = self.average_time_uninterrupted(arc.distance, arc.cost, self.speed)
         elif arc.type == ArcType.traffic_light:
-            flow = ApiInterface.get_dummy_volume(arc.nodeB.route)
-            time = self.average_time_in_tls(flow,arc.nodeA.duration,arc.nodeA.frequency)
+            flow = ApiInterface.get_volume(arc.nodeB.route)
+            time = self.average_time_in_tls(flow, arc.nodeA.duration,arc.nodeA.frequency)
         else:
-            flow = ApiInterface.get_dummy_volume(arc.nodeB.route)
-            time = self.average_time_in_toll(flow, arc.nodeB.servers, arc.nodeB.service_rate)
-        return time;
+            flow = ApiInterface.get_volume(arc.nodeB.route)
+            time = self.average_time_in_toll(flow, arc.nodeB.service_rate, arc.nodeB.servers)
+
+        return time
 
 
     def average_time_uninterrupted(self,arc_distance, arc_cost, car_speed):
@@ -99,6 +108,10 @@ class Car(object):
         """
         # Split normal arrival rate for each window to model each individual M/M/1 queue
         arrival_rate_foreach_server = arrival_rate / servers
+
+        if arrival_rate_foreach_server == 0:
+            return 1 / service_rate
+
         traffic_intensity = arrival_rate_foreach_server / service_rate
         vehicles_in_system_per_window = traffic_intensity / (1.0 - traffic_intensity)
         time_in_system = vehicles_in_system_per_window / arrival_rate_foreach_server

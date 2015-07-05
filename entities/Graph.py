@@ -53,10 +53,10 @@ class Graph(object):
                     elif unicodedata.normalize('NFC', element.type) == unicodedata.normalize('NFC', u'toll'):
                         #If the node is interrupted we need the start and end of itself
                         location = element.location.split(',')
-                        node = TollNode(element.id, NodeType.toll, element.toll.number_of_servers, element.toll.service_rate,element.roads[0].id ,element.roads[0].kilometer, location[0], location[1] )
+                        node = TollNode(element.id, NodeType.toll, element.toll.number_of_servers, element.toll.service_rate, element.roads[0].id ,element.roads[0].kilometer, location[0], location[1] )
                         nodes.append(node)
                         last_node.addArc(ArcType.uninterrupted, node, 0,(node.kilometer - last_node.kilometer))
-                        end_of_toll = copy.copy(node)
+                        end_of_toll = TollNode(element.id + "x", NodeType.toll, element.toll.number_of_servers, element.toll.service_rate, element.roads[0].id ,element.roads[0].kilometer, location[0], location[1] )
                         last_node = node
                         node = end_of_toll
                         nodes.append(node)
@@ -66,7 +66,8 @@ class Graph(object):
                         node = TrafficLightNode(element.id, NodeType.traffic_light,element.red_light.duration, element.red_light.frequency ,element.roads[0].id ,element.roads[0].kilometer, location[0], location[1])
                         nodes.append(node)
                         last_node.addArc(ArcType.uninterrupted, node, 0,(node.kilometer - last_node.kilometer))
-                        end_of_tl = copy.copy(node)
+                        end_of_tl = TrafficLightNode(element.id + "x", NodeType.traffic_light,element.red_light.duration, element.red_light.frequency ,element.roads[0].id ,element.roads[0].kilometer, location[0], location[1])
+
                         last_node = node
                         node = end_of_tl
                         nodes.append(node)
@@ -98,9 +99,10 @@ class Graph(object):
 
     @staticmethod
     def recalculateCost(arc):
-        speed = ApiInterface.get_dummy_speed(arc.nodeB.route)
-        volume = ApiInterface.get_dummy_volume(arc.nodeB.route)
+        speed = ApiInterface.get_speed(arc.nodeB.route)
+        volume = ApiInterface.get_volume(arc.nodeB.route)
         arc.cost = CostCalculator.calculeUninterruptedCost(speed, volume)
+
 """
     def scheduleRecalculations(self):
         while True:
