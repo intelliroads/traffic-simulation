@@ -75,7 +75,7 @@ class Graph(object):
                         nodes.append(node)
                 else:
                     # element is a Sensor
-                    node = Node(element.id, NodeType.sensor, element.road_id ,element.kilometer)
+                    node = Node(element.id, NodeType.sensor, element.road_id ,element.kilometer, 0, 0)
                     nodes.append(node)
                 #Add outer arc to last_node, the type of the arc is determined by the two nodes that conform it
                 if last_node != None:

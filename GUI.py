@@ -83,12 +83,19 @@ class Drawer(QtGui.QWidget):
         arcs = node.outArcs
         visitedNodes = []
 
-        while len(arcs) != 0 :
+
+        current_node = None
+        while len(arcs) != 0:
             arc = arcs.pop()
-            self.drawLine(qp, int(arc.nodeA.x), int(arc.nodeA.y), int(arc.nodeB.x), int(arc.nodeB.y), darkgray, lightgray)
+            if arc.nodeA.nodeType != NodeType.sensor:
+                current_node = arc.nodeA
+            if arc.nodeB.nodeType != NodeType.sensor:
+                self.drawLine(qp, int(current_node.x), int(current_node.y), int(arc.nodeB.x), int(arc.nodeB.y), darkgray, lightgray)
+                current_node = arc.nodeB
             if not arc.nodeB in visitedNodes:
                 arcs.extend(arc.nodeB.outArcs)
                 visitedNodes.append(arc.nodeB)
+
 
         for node in self.graph.nodes:
             if node.nodeType == NodeType.traffic_light:
@@ -97,6 +104,7 @@ class Drawer(QtGui.QWidget):
                 self.drawImage(qp, tollImage, int(node.x), int(node.y))
             elif node.nodeType == NodeType.fork:
                 self.drawNode(qp, int(node.x), int(node.y), gray)
+
 
 
     def paintEvent(self, e):
