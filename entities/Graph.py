@@ -7,9 +7,8 @@ import unicodedata
 import copy
 
 class Graph(object):
-    def __init__(self, env, recalculationStep):
+    def __init__(self, env):
         self.env = env
-        self.recalculationStep = recalculationStep
         spots = ApiInterface.get_all_spots()
         sensors = ApiInterface.get_all_sensors()
         self.nodes = []
@@ -22,7 +21,7 @@ class Graph(object):
             for road in spot.roads:
                 auxSpot = copy.copy(spot)
                 auxSpot.roads = [road]
-                if(not dict.has_key(road.id)):
+                if not dict.has_key(road.id):
                     dict[road.id] = []
                 dict[road.id].append(auxSpot)
         for sensor in sensors:
@@ -99,6 +98,7 @@ class Graph(object):
 
     @staticmethod
     def recalculateCost(arc):
+        #TODO: Still dummy...
         speed = ApiInterface.get_speed(arc.nodeB.route)
         volume = ApiInterface.get_volume(arc.nodeB.route)
         arc.cost = CostCalculator.calculeUninterruptedCost(speed, volume)

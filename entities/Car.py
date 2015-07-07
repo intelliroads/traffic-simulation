@@ -2,7 +2,6 @@ import random
 from api_interface.ApiInterface import ApiInterface
 from entities.Arc import ArcType
 from Node import NodeType
-from Graph import Graph
 from enum import Enum
 import costs.Dijkstra
 
@@ -27,11 +26,14 @@ class Car(object):
         self.process = env.process(self.simulate(env))
         self.type = type
         self.destination = destination
+        self.readings = 0
+        self.driving = False
     
 
     def simulate(self, env):
         yield self.env.timeout(self.startTime)
 
+        self.driving = True
         while True:
             if self.position.nodeType == NodeType.sensor:
                 #print "Post of car {0}, route {1}, kilometer {2}, time {3}".format(self.carId, self.position.route,self.position.kilometer, self.env.now)
@@ -39,6 +41,7 @@ class Car(object):
                 new_speed = (1-arc.cost) * self.speed
                 period = DETECTOR_DISTANCE / self.speed
                 ApiInterface.post_reading(arc.nodeB.nodeId, new_speed, period)
+                self.readings += 1
             elif self.position.nodeType == NodeType.traffic_light or self.position.nodeType == NodeType.toll:
                 print "Interrupted spot reached by car {0},route {1}, kilometer {2}, time {3}".format(self.carId,self.position.route,self.position.kilometer, self.env.now)
                 arc = self.position.outArcs[0]
@@ -51,6 +54,7 @@ class Car(object):
 
                 if len(arcs) == 0:
                     print "Car {0} arrived at destination".format(self.carId)
+                    self.driving = False
                     break
 
                 if self.type == CarType.random:

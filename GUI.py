@@ -21,15 +21,25 @@ tollImage=reader.read()
 
 class Drawer(QtGui.QWidget):
     
-    def __init__(self, graph):
+    def __init__(self, graph, color_interpolator):
         super(Drawer, self).__init__()
         self.initUI()
         self.graph = graph
+        self.readings = 0
+        self.driving = 0
+        self.time = "0"
+        self.color_interpolator = color_interpolator
 
     def initUI(self):      
-        self.showFullScreen()
+        #self.showFullScreen()
+        self.showMaximized()
         self.setWindowTitle('Graph')
         self.show()
+
+    def drawText(self, event, qp, text):
+        qp.setPen(QtGui.QColor(0, 0, 0))
+        qp.setFont(QtGui.QFont('Decorative', 10))
+        qp.drawText(event.rect(), QtCore.Qt.AlignCenter, text)
 
     def drawImage(self, qp, image,  x, y):
         qp.drawImage(QtCore.QRect((x*WIDTH_CONSTANT) - (ICON_DIMENSION/2) + WINDOW_LEFT_PADDING,(-y*HEIGHT_CONSTANT) - (ICON_DIMENSION/2) + WINDOW_TOP_PADDING, ICON_DIMENSION, ICON_DIMENSION), image)
@@ -74,15 +84,15 @@ class Drawer(QtGui.QWidget):
             y = random.randint(1, size.height()-1)
             self.drawPoint(qp, x, y, color)
 
-    def paintGraph(self, qp):
+    def paintGraph(self, qp, graph):
         gray = QtGui.QColor(87, 87, 87)
         darkgray = QtGui.QColor(71, 71, 71)
         lightgray = QtGui.QColor(131, 131, 131)
 
-        node = self.graph.getFirstNode()
-        arcs = node.outArcs
-        visitedNodes = []
-
+        node = graph.getFirstNode()
+        arcs = []
+        arcs.extend(node.outArcs)
+        visited_nodes = []
 
         current_node = None
         while len(arcs) != 0:
@@ -90,14 +100,16 @@ class Drawer(QtGui.QWidget):
             if arc.nodeA.nodeType != NodeType.sensor:
                 current_node = arc.nodeA
             if arc.nodeB.nodeType != NodeType.sensor:
-                self.drawLine(qp, int(current_node.x), int(current_node.y), int(arc.nodeB.x), int(arc.nodeB.y), darkgray, lightgray)
+                #TODO: Paint arc based not only on current arc
+                cost_color = self.color_interpolator.get_color(arc.cost)
+                color = QtGui.QColor(cost_color[0], cost_color[1], cost_color[2])
+                self.drawLine(qp, int(current_node.x), int(current_node.y), int(arc.nodeB.x), int(arc.nodeB.y), darkgray, color)
                 current_node = arc.nodeB
-            if not arc.nodeB in visitedNodes:
+            if not arc.nodeB in visited_nodes:
                 arcs.extend(arc.nodeB.outArcs)
-                visitedNodes.append(arc.nodeB)
+                visited_nodes.append(arc.nodeB)
 
-
-        for node in self.graph.nodes:
+        for node in graph.nodes:
             if node.nodeType == NodeType.traffic_light:
                 self.drawImage(qp, semImage, int(node.x), int(node.y))
             elif node.nodeType == NodeType.toll:
@@ -105,13 +117,11 @@ class Drawer(QtGui.QWidget):
             elif node.nodeType == NodeType.fork:
                 self.drawNode(qp, int(node.x), int(node.y), gray)
 
-
-
-    def paintEvent(self, e):
+    def paintEvent(self, e=None):
         qp = QtGui.QPainter()
         qp.begin(self)
         #self.paintGrass(qp)
-        self.paintGraph(qp)
-
+        self.paintGraph(qp, self.graph)
+        self.drawText(e, qp, "Time: {0}, Readings: {1}, Driving: {2}".format(self.time, self.readings, self.driving))
         qp.end()
 

@@ -1,6 +1,5 @@
 from enum import Enum
 
-
 class ArcType(Enum):
     uninterrupted = 1
     toll = 2
