@@ -7,31 +7,36 @@ import unicodedata
 import copy
 
 class Graph(object):
-    def __init__(self, env):
+    def __init__(self, env, simulation_start_time):
         self.env = env
+        self.simulation_start_time = simulation_start_time
+        #self.process = env.process(self.simulate(env))
         spots = ApiInterface.get_all_spots()
         sensors = ApiInterface.get_all_sensors()
         self.nodes = []
-        self.initNodes(spots,sensors)
+        self.initNodes(spots, sensors)
+
+    def simulate(self, env):
+        yield env.timeout(0.5)
+        print "Recalculation graph..."
+        self.recalculate_graph()
 
     def initNodes(self, spots, sensors):
         dict = {}
         # Creation of dictionary to store spots_list of sensors and spots by roadId
         for spot in spots:
+            #auxSpot = copy.copy(spot)
             for road in spot.roads:
-                auxSpot = copy.copy(spot)
-                auxSpot.roads = [road]
                 if not dict.has_key(road.id):
                     dict[road.id] = []
-                dict[road.id].append(auxSpot)
+                dict[road.id].append(spot)
         for sensor in sensors:
             if not dict.has_key(sensor.road_id):
                 dict[sensor.road_id] = []
             dict[sensor.road_id].append(sensor)
         # Order sub lists by kilometer
         for key in dict.keys():
-            dict[key].sort(key = lambda x: x.roads[0].kilometer if isinstance(x,Spot) else x.kilometer,
-                                       reverse = False)
+            dict[key].sort(key = lambda x: x.roads[0].kilometer if isinstance(x,Spot) else x.kilometer, reverse=False)
 
         # Transform dictionary into Nodes and Arcs
         forkNodes = []
@@ -43,39 +48,56 @@ class Graph(object):
                 node = None
                 if isinstance(element, Spot):
                     if unicodedata.normalize('NFC', element.type) == unicodedata.normalize('NFC', u'fork'):
-                        node = next((x for x in forkNodes if x.nodeId == element.id),None)
+                        node = next((x for x in forkNodes if x.nodeId == element.id), None)
                         if node == None:
                             location = element.location.split(',')
-                            node = Node(element.id, NodeType.fork, element.roads[0].id ,element.roads[0].kilometer, location[0], location[1])
+                            roads = {road.id:road.kilometer for road in element.roads}
+                            node = Node(element.id, NodeType.fork, roads, location[0], location[1])
                             nodes.append(node)
                             forkNodes.append(node)
                     elif unicodedata.normalize('NFC', element.type) == unicodedata.normalize('NFC', u'toll'):
                         #If the node is interrupted we need the start and end of itself
                         location = element.location.split(',')
-                        node = TollNode(element.id, NodeType.toll, element.toll.number_of_servers, element.toll.service_rate, element.roads[0].id ,element.roads[0].kilometer, location[0], location[1] )
+                        roads = {road.id:road.kilometer for road in element.roads}
+                        node = TollNode(element.id, NodeType.toll, element.toll.number_of_servers, element.toll.service_rate, roads, location[0], location[1] )
                         nodes.append(node)
-                        last_node.addArc(ArcType.uninterrupted, node, 0,(node.kilometer - last_node.kilometer))
-                        end_of_toll = TollNode(element.id + "x", NodeType.toll, element.toll.number_of_servers, element.toll.service_rate, element.roads[0].id ,element.roads[0].kilometer, location[0], location[1] )
+
+                        road = None
+                        for key in node.roads.keys():
+                            if last_node.roads.has_key(key):
+                                road = key
+                                break
+                        last_node.addArc(ArcType.uninterrupted, node, 0,(node.roads[road] - last_node.roads[road]))
+                        end_of_toll = TollNode(element.id + "x", NodeType.toll, element.toll.number_of_servers, element.toll.service_rate, roads, location[0], location[1])
                         last_node = node
                         node = end_of_toll
                         nodes.append(node)
                     elif unicodedata.normalize('NFC', element.type) == unicodedata.normalize('NFC', u'trafficLight'):
                         #If the node is interrupted we need the start and end of itself
                         location = element.location.split(',')
-                        node = TrafficLightNode(element.id, NodeType.traffic_light,element.red_light.duration, element.red_light.frequency ,element.roads[0].id ,element.roads[0].kilometer, location[0], location[1])
+                        roads = {road.id:road.kilometer for road in element.roads}
+                        node = TrafficLightNode(element.id, NodeType.traffic_light, element.red_light.duration, element.red_light.frequency, roads, location[0], location[1])
                         nodes.append(node)
-                        last_node.addArc(ArcType.uninterrupted, node, 0,(node.kilometer - last_node.kilometer))
-                        end_of_tl = TrafficLightNode(element.id + "x", NodeType.traffic_light,element.red_light.duration, element.red_light.frequency ,element.roads[0].id ,element.roads[0].kilometer, location[0], location[1])
+
+                        road = None
+                        for key in node.roads.keys():
+                            if last_node.roads.has_key(key):
+                                road = key
+                                break
+                        last_node.addArc(ArcType.uninterrupted, node, 0,(node.roads[road] - last_node.roads[road]))
+                        end_of_tl = TrafficLightNode(element.id + "x", NodeType.traffic_light,element.red_light.duration, element.red_light.frequency, roads, location[0], location[1])
 
                         last_node = node
                         node = end_of_tl
                         nodes.append(node)
                     else:
-                        node = Node(element.id, NodeType.ordinary,element.roads[0].id ,element.roads[0].kilometer)
+                        roads = {road.id:road.kilometer for road in element.roads}
+                        node = Node(element.id, NodeType.ordinary, roads, 0, 0)
                         nodes.append(node)
                 else:
                     # element is a Sensor
-                    node = Node(element.id, NodeType.sensor, element.road_id ,element.kilometer, 0, 0)
+
+                    node = Node(element.id, NodeType.sensor, {element.road_id : element.kilometer}, 0, 0)
                     nodes.append(node)
                 #Add outer arc to last_node, the type of the arc is determined by the two nodes that conform it
                 if last_node != None:
@@ -84,7 +106,14 @@ class Graph(object):
                         arc_type = ArcType.traffic_light
                     elif last_node.nodeType == NodeType.toll and node.nodeType == NodeType.toll:
                         arc_type = ArcType.toll
-                    last_node.addArc(arc_type, node, 0,(node.kilometer - last_node.kilometer))
+
+                    road = None
+                    for key in node.roads.keys():
+                        if last_node.roads.has_key(key):
+                            road = key
+                            break
+                    if last_node.roads[road] <= node.roads[road]:
+                        last_node.addArc(arc_type, node, 0,(node.roads[road] - last_node.roads[road]))
                 last_node = node
             # add Finish node to route
             #last_node.addArc(ArcType.uninterrupted, Node('finish '+ key, NodeType.finish, key, 9999), 0,0)
@@ -96,12 +125,52 @@ class Graph(object):
     def getLastNode(self):
         return self.nodes[len(self.nodes) -1]
 
+    def recalculate_graph(self):
+        node = self.getFirstNode()
+        arcs = []
+        arcs.extend(node.outArcs)
+        visited_nodes = []
+        current_node = None
+        temp_arcs = []
+
+        while len(arcs) != 0:
+            arc = arcs.pop()
+            temp_arcs.append(arc)
+            if arc.nodeA.nodeType != NodeType.sensor:
+                current_node = arc.nodeA
+            if arc.nodeB.nodeType != NodeType.sensor:
+
+                delta = int(self.env.now * 3600000)
+                to_time = self.simulation_start_time + delta
+                from_time = self.simulation_start_time + delta - 3600000
+
+                road = None
+                for key in arc.nodeB.roads.keys():
+                    if current_node.roads.has_key(key):
+                        road = key
+                        break
+
+                speed = ApiInterface.get_speed(road, current_node.roads[road], arc.nodeB.roads[road], from_time, to_time)
+                volume = ApiInterface.get_volume(road, arc.nodeA.roads[road], from_time, to_time)
+                cost = CostCalculator.calculeUninterruptedCost(speed, volume)
+
+                for temp_arc in temp_arcs:
+                    temp_arc.cost = cost
+
+                temp_arcs = []
+                current_node = arc.nodeB
+            if not arc.nodeB in visited_nodes:
+                arcs.extend(arc.nodeB.outArcs)
+                visited_nodes.append(arc.nodeB)
+
+
     @staticmethod
     def recalculateCost(arc):
-        #TODO: Still dummy...
-        speed = ApiInterface.get_speed(arc.nodeB.route)
-        volume = ApiInterface.get_volume(arc.nodeB.route)
+        speed = ApiInterface.get_speed(arc.nodeB.roads[arc.nodeA.roads.keys()[0]])
+        volume = ApiInterface.get_volume(arc.nodeB.roads[arc.nodeA.roads.keys()[0]])
         arc.cost = CostCalculator.calculeUninterruptedCost(speed, volume)
+
+
 
 """
     def scheduleRecalculations(self):

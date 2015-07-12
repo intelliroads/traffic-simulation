@@ -27,7 +27,7 @@ class Drawer(QtGui.QWidget):
         self.graph = graph
         self.readings = 0
         self.driving = 0
-        self.time = "0"
+        self.time = "0.0"
         self.color_interpolator = color_interpolator
 
     def initUI(self):      
@@ -84,44 +84,50 @@ class Drawer(QtGui.QWidget):
             y = random.randint(1, size.height()-1)
             self.drawPoint(qp, x, y, color)
 
-    def paintGraph(self, qp, graph):
-        gray = QtGui.QColor(87, 87, 87)
-        darkgray = QtGui.QColor(71, 71, 71)
-        lightgray = QtGui.QColor(131, 131, 131)
+    def paintGraph(self, qp):
+        try:
+            gray = QtGui.QColor(87, 87, 87)
+            darkgray = QtGui.QColor(71, 71, 71)
+            lightgray = QtGui.QColor(131, 131, 131)
 
-        node = graph.getFirstNode()
-        arcs = []
-        arcs.extend(node.outArcs)
-        visited_nodes = []
+            node = self.graph.getFirstNode()
+            arcs = []
+            arcs.extend(node.outArcs)
+            visited_nodes = []
 
-        current_node = None
-        while len(arcs) != 0:
-            arc = arcs.pop()
-            if arc.nodeA.nodeType != NodeType.sensor:
-                current_node = arc.nodeA
-            if arc.nodeB.nodeType != NodeType.sensor:
-                #TODO: Paint arc based not only on current arc
-                cost_color = self.color_interpolator.get_color(arc.cost)
-                color = QtGui.QColor(cost_color[0], cost_color[1], cost_color[2])
-                self.drawLine(qp, int(current_node.x), int(current_node.y), int(arc.nodeB.x), int(arc.nodeB.y), darkgray, color)
-                current_node = arc.nodeB
-            if not arc.nodeB in visited_nodes:
-                arcs.extend(arc.nodeB.outArcs)
-                visited_nodes.append(arc.nodeB)
+            current_node = None
+            while len(arcs) != 0:
+                arc = arcs.pop()
+                if arc.nodeA.nodeType != NodeType.sensor:
+                    current_node = arc.nodeA
+                if arc.nodeB.nodeType != NodeType.sensor:
+                    #TODO: Paint arc based not only on current arc
+                    cost_color = self.color_interpolator.get_color(arc.cost)
+                    color = QtGui.QColor(cost_color[0], cost_color[1], cost_color[2])
+                    self.drawLine(qp, int(current_node.x), int(current_node.y), int(arc.nodeB.x), int(arc.nodeB.y), darkgray, color)
+                    current_node = arc.nodeB
+                if not arc.nodeB in visited_nodes:
+                    arcs.extend(arc.nodeB.outArcs)
+                    visited_nodes.append(arc.nodeB)
 
-        for node in graph.nodes:
-            if node.nodeType == NodeType.traffic_light:
-                self.drawImage(qp, semImage, int(node.x), int(node.y))
-            elif node.nodeType == NodeType.toll:
-                self.drawImage(qp, tollImage, int(node.x), int(node.y))
-            elif node.nodeType == NodeType.fork:
-                self.drawNode(qp, int(node.x), int(node.y), gray)
+            for node in self.graph.nodes:
+                if node.nodeType == NodeType.traffic_light:
+                    self.drawImage(qp, semImage, int(node.x), int(node.y))
+                elif node.nodeType == NodeType.toll:
+                    self.drawImage(qp, tollImage, int(node.x), int(node.y))
+                elif node.nodeType == NodeType.fork:
+                    self.drawNode(qp, int(node.x), int(node.y), gray)
+        except:
+            print ("")
 
     def paintEvent(self, e=None):
         qp = QtGui.QPainter()
         qp.begin(self)
         #self.paintGrass(qp)
-        self.paintGraph(qp, self.graph)
-        self.drawText(e, qp, "Time: {0}, Readings: {1}, Driving: {2}".format(self.time, self.readings, self.driving))
+        self.paintGraph(qp)
+        try:
+            self.drawText(e, qp, "Time: {0}, Readings: {1}, Driving: {2}".format(self.time, self.readings, self.driving))
+        except:
+            print ("Time")
         qp.end()
 

@@ -1,5 +1,4 @@
 from enum import Enum
-
 from entities.Arc import Arc
 
 
@@ -13,20 +12,16 @@ class NodeType(Enum):
 
 
 class Node(object):
-    def __init__(self, nodeId, nodeType, route, kilometer, x, y):
+    def __init__(self, nodeId, nodeType, roads, x, y):
         self.nodeType = nodeType
         self.nodeId = nodeId
         self.outArcs = []
-        self.route = route
-        self.kilometer = kilometer
+        self.roads = roads
         self.x = x
         self.y = y
 
     def addArc(self, arcType, nodeB, cost, distance):
-        # Distance is 0 when nodes belong to different routes
-        if self.route != nodeB.route:
-            distance = 0
-        #Add outer arc from current node to destination node
+        # Add outer arc from current node to destination node
         self.outArcs.append(Arc(arcType, self, nodeB, cost, distance))
 
     def __repr__(self):
@@ -34,14 +29,14 @@ class Node(object):
 
 
 class TollNode(Node):
-    def __init__(self, nodeId, nodeType, servers, service_rate, route, kilometer, x, y):
-        super(TollNode, self).__init__(nodeId, nodeType, route, kilometer,x, y)
+    def __init__(self, nodeId, nodeType, servers, service_rate, road, x, y):
+        super(TollNode, self).__init__(nodeId, nodeType, road, x, y)
         self.servers = servers
         self.service_rate = service_rate
 
 
 class TrafficLightNode(Node):
-    def __init__(self, nodeId, nodeType, duration, frequency, route,kilometer,x, y):
-        super(TrafficLightNode, self).__init__(nodeId, nodeType,route, kilometer, x, y)
+    def __init__(self, nodeId, nodeType, duration, frequency, road, x, y):
+        super(TrafficLightNode, self).__init__(nodeId, nodeType, road, x, y)
         self.duration = duration
         self.frequency = frequency

@@ -29,8 +29,8 @@ class ApiInterface(object):
 
 
     @staticmethod
-    def post_reading(sensor_id, speed, period):
-        return ApiInterface.post(ApiInterface.READING, Reading(sensor_id, speed, period).toJSON())
+    def post_reading(sensor_id, speed, period, time):
+        return ApiInterface.post(ApiInterface.READING, Reading(sensor_id, speed, period, time).toJSON())
 
     @staticmethod
     def get_all_spots():
@@ -49,12 +49,12 @@ class ApiInterface(object):
         return sensors
 
     @staticmethod
-    def get_speed(route_id):
-        payload = {'fromKm': '0', 'toKm': '32', 'fromTime': '32', 'toTime': '40'}
-        return  ApiInterface.get(ApiInterface.SPEED.format(route_id),payload)
+    def get_speed(road_id, from_km, to_km, from_time, to_time):
+        payload = {'fromKm': from_km, 'toKm': to_km, 'fromTime': from_time, 'toTime': to_time}
+        return  ApiInterface.get(ApiInterface.SPEED.format(road_id), payload)
 
 
     @staticmethod
-    def get_volume(route_id):
-        payload = {'km': '32', 'fromTime': '32', 'toTime': '40'}
-        return ApiInterface.get(ApiInterface.VOLUME.format(route_id),payload)
+    def get_volume(road_id, km, from_time, to_time):
+        payload = {'km': km, 'fromTime': from_time, 'toTime': to_time}
+        return ApiInterface.get(ApiInterface.VOLUME.format(road_id), payload)
