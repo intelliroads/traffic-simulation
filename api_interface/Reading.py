@@ -9,5 +9,5 @@ class Reading(object):
         self.time = time
 
     def toJSON(self):
-        dic = {"sensorId":"{0}".format(self.sensor_id), "speed":self.speed, "period": self.period, "time":self.time}
+        dic = {"sensorId": "{0}".format(self.sensor_id), "speed": self.speed, "period": self.period, "time": self.time}
         return json.dumps(dic)

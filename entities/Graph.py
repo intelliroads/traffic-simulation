@@ -10,16 +10,18 @@ class Graph(object):
     def __init__(self, env, simulation_start_time):
         self.env = env
         self.simulation_start_time = simulation_start_time
-        #self.process = env.process(self.simulate(env))
+        self.process = env.process(self.simulate(env))
+        self.repaining = False
         spots = ApiInterface.get_all_spots()
         sensors = ApiInterface.get_all_sensors()
         self.nodes = []
         self.initNodes(spots, sensors)
 
     def simulate(self, env):
-        yield env.timeout(0.5)
-        print "Recalculation graph..."
-        self.recalculate_graph()
+        while True:
+            yield env.timeout(0.10)
+            #print "Recalculation graph..."
+            self.recalculate_graph()
 
     def initNodes(self, spots, sensors):
         dict = {}
@@ -36,7 +38,7 @@ class Graph(object):
             dict[sensor.road_id].append(sensor)
         # Order sub lists by kilometer
         for key in dict.keys():
-            dict[key].sort(key = lambda x: x.roads[0].kilometer if isinstance(x,Spot) else x.kilometer, reverse=False)
+            dict[key].sort(key = lambda x: x.get_kilometer_of_route(key) if isinstance(x, Spot) else x.kilometer, reverse=False)
 
         # Transform dictionary into Nodes and Arcs
         forkNodes = []
@@ -96,7 +98,6 @@ class Graph(object):
                         nodes.append(node)
                 else:
                     # element is a Sensor
-
                     node = Node(element.id, NodeType.sensor, {element.road_id : element.kilometer}, 0, 0)
                     nodes.append(node)
                 #Add outer arc to last_node, the type of the arc is determined by the two nodes that conform it
@@ -123,9 +124,15 @@ class Graph(object):
         return self.nodes[0]
 
     def getLastNode(self):
+        for node in self.nodes:
+            if len(node.outArcs) == 0:
+                return node
+
+    def getLastNode(self):
         return self.nodes[len(self.nodes) -1]
 
     def recalculate_graph(self):
+        self.repaining = True
         node = self.getFirstNode()
         arcs = []
         arcs.extend(node.outArcs)
@@ -150,19 +157,30 @@ class Graph(object):
                         road = key
                         break
 
-                speed = ApiInterface.get_speed(road, current_node.roads[road], arc.nodeB.roads[road], from_time, to_time)
                 volume = ApiInterface.get_volume(road, arc.nodeA.roads[road], from_time, to_time)
-                cost = CostCalculator.calculeUninterruptedCost(speed, volume)
+                if (current_node.nodeType == NodeType.traffic_light and arc.nodeB.nodeType == NodeType.traffic_light) \
+                        or (current_node.nodeType == NodeType.toll and arc.nodeB.nodeType == NodeType.toll):
+                    arc.cost = volume
+                else:
+                    speed = ApiInterface.get_speed(road, current_node.roads[road], arc.nodeB.roads[road], from_time, to_time)
 
-                for temp_arc in temp_arcs:
-                    temp_arc.cost = cost
+                    if speed == 0 or volume == 0:
+                        cost = 0
+                    else:
+                        cost = CostCalculator.calculeUninterruptedCost(speed, volume)
 
-                temp_arcs = []
+                    #print "{0}, {1}, {2}".format(speed, volume, cost)
+
+                    for temp_arc in temp_arcs:
+                        temp_arc.cost = cost
+
+                    temp_arcs = []
+
                 current_node = arc.nodeB
-            if not arc.nodeB in visited_nodes:
+            if arc.nodeB not in visited_nodes:
                 arcs.extend(arc.nodeB.outArcs)
                 visited_nodes.append(arc.nodeB)
-
+        self.repaining = False
 
     @staticmethod
     def recalculateCost(arc):

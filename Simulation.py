@@ -10,22 +10,33 @@ from utils import ColorInterpolator
 from PyQt4 import QtGui
 from GUI import Drawer
 
-NUM_CARS = 1
+NUM_CARS = 0
 
 def createGraph(env, simulation_start_time):
     return Graph(env, simulation_start_time)
 
 
-def simulate():
-    env.run(until=1000)
+def simulate(cars):
+    env.run(until=10)
 
-def repaint_graph(drawer):
+    print "Simulation finished"
+    random_cars = [car.travelTime for car in cars if car.type == CarType.random]
+    avg_random_cars = float(sum(random_cars))/len(random_cars)
+
+    intelligent_cars = [car.travelTime for car in cars if car.type == CarType.intelligent]
+    avg_intelligent_cars = float(sum(intelligent_cars))/len(intelligent_cars)
+
+    print avg_random_cars
+    print avg_intelligent_cars
+
+def repaint_graph(drawer, graph,):
     while True:
-        time.sleep(1)
-        drawer.readings = sum([car.readings for car in cars])
-        drawer.driving = sum([car.driving for car in cars])
-        drawer.time = "%.2f" % env.now
-        drawer.update()
+        if not graph.repaining:
+            time.sleep(1)
+            drawer.readings = sum([car.readings for car in cars])
+            drawer.driving = sum([car.driving for car in cars])
+            drawer.time = "%.2f" % env.now
+            drawer.update()
 
 
 env = simpy.Environment()
@@ -36,15 +47,23 @@ simulation_start_time = int((datetime.now() - datetime(1970,1,1)).total_seconds(
 graph = createGraph(env, simulation_start_time)
 color_interpolator = ColorInterpolator.ColorInterpolator()
 app = QtGui.QApplication(sys.argv)
-cars = [Car(env, i, graph.getFirstNode(), graph, random.expovariate(0.05), CarType.random) for i in range(NUM_CARS)]
+
+car_nro = 0
+cars = [Car(env, i + car_nro, graph.getFirstNode(), graph, 0, CarType.random) for i in range(50)]
+car_nro += 50
+cars.extend([Car(env, i + car_nro, graph.getFirstNode(), graph, 0, CarType.intelligent, graph.getLastNode()) for i in range(50)])
+car_nro += 100
+cars.extend([Car(env, i + car_nro,  graph.getFirstNode(), graph, random.expovariate(0.05), CarType.random) for i in range(NUM_CARS)])
+car_nro += NUM_CARS
+
 
 # Start simulation in other thread
-thread.start_new_thread(simulate, ())
+thread.start_new_thread(simulate, (cars,))
 
-drawer = Drawer(graph, color_interpolator)
+drawer = Drawer(graph, color_interpolator, cars)
 
 # Daemon that repaints graph
-thread.start_new_thread(repaint_graph, (drawer,))
+thread.start_new_thread(repaint_graph, (drawer, graph,))
 
 sys.exit(app.exec_())
 

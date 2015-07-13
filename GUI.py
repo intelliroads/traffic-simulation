@@ -1,6 +1,7 @@
 import random
 from PyQt4 import QtGui, QtCore
 from entities.Node import NodeType
+from entities.Car import CarType
 
 WINDOW_LEFT_PADDING = 80
 WINDOW_TOP_PADDING = 380
@@ -19,9 +20,12 @@ semImage=reader.read()
 reader= QtGui.QImageReader("toll.png")
 tollImage=reader.read()
 
+reader= QtGui.QImageReader("car.png")
+carImage=reader.read()
+
 class Drawer(QtGui.QWidget):
     
-    def __init__(self, graph, color_interpolator):
+    def __init__(self, graph, color_interpolator, cars):
         super(Drawer, self).__init__()
         self.initUI()
         self.graph = graph
@@ -29,6 +33,7 @@ class Drawer(QtGui.QWidget):
         self.driving = 0
         self.time = "0.0"
         self.color_interpolator = color_interpolator
+        self.cars = cars
 
     def initUI(self):      
         #self.showFullScreen()
@@ -101,12 +106,16 @@ class Drawer(QtGui.QWidget):
                 if arc.nodeA.nodeType != NodeType.sensor:
                     current_node = arc.nodeA
                 if arc.nodeB.nodeType != NodeType.sensor:
-                    #TODO: Paint arc based not only on current arc
-                    cost_color = self.color_interpolator.get_color(arc.cost)
+                    road = arc.nodeA.roads.keys()[0]
+
+                    for temp_arc in current_node.outArcs:
+                        if temp_arc.nodeB.roads.keys()[0] == road:
+                            arc_a = temp_arc
+                    cost_color = self.color_interpolator.get_color(arc_a.cost)
                     color = QtGui.QColor(cost_color[0], cost_color[1], cost_color[2])
                     self.drawLine(qp, int(current_node.x), int(current_node.y), int(arc.nodeB.x), int(arc.nodeB.y), darkgray, color)
                     current_node = arc.nodeB
-                if not arc.nodeB in visited_nodes:
+                if arc.nodeB not in visited_nodes:
                     arcs.extend(arc.nodeB.outArcs)
                     visited_nodes.append(arc.nodeB)
 
@@ -117,8 +126,12 @@ class Drawer(QtGui.QWidget):
                     self.drawImage(qp, tollImage, int(node.x), int(node.y))
                 elif node.nodeType == NodeType.fork:
                     self.drawNode(qp, int(node.x), int(node.y), gray)
+
+            for car in self.cars:
+                if car.type == CarType.intelligent:
+                    self.drawImage(qp, carImage, int(car.last_known_position.x), int(car.last_known_position.y))
         except:
-            print ("")
+            print ("Graph not initialized")
 
     def paintEvent(self, e=None):
         qp = QtGui.QPainter()

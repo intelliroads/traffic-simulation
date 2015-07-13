@@ -29,8 +29,8 @@ class ApiInterface(object):
 
 
     @staticmethod
-    def post_reading(sensor_id, speed, period, time):
-        return ApiInterface.post(ApiInterface.READING, Reading(sensor_id, speed, period, time).toJSON())
+    def post_reading(sensor_id, speed, period, post_time):
+        return ApiInterface.post(ApiInterface.READING, Reading(sensor_id, speed, period, post_time).toJSON())
 
     @staticmethod
     def get_all_spots():

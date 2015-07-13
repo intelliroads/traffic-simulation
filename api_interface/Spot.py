@@ -18,5 +18,10 @@ class Spot(object):
         elif unicodedata.normalize('NFC', self.type) == unicodedata.normalize('NFC', u'toll'):
             self.toll = Toll(spotJSON["toll"])
 
+    def get_kilometer_of_route(self, road_id):
+        for road in self.roads:
+            if road.id == road_id:
+                return road.kilometer
+
     def __str__(self):
         return  "Spot - Id {0}, Type {1}, Roads {2}".format(self.id, self.type, self.roads)

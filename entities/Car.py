@@ -8,7 +8,7 @@ import costs.Dijkstra
 DETECTOR_DISTANCE = 1.5
 ROUTE_MAX_SERVICE = 650
 AVG_SPEED = 100
-SPEED_SIGMA = 5
+SPEED_SIGMA = 15
 
 class CarType(Enum):
     random = 1
@@ -28,7 +28,7 @@ class Car(object):
         self.destination = destination
         self.readings = 0
         self.driving = False
-    
+        self.last_known_position = self.position
 
     def simulate(self, env):
         yield self.env.timeout(self.startTime)
@@ -36,24 +36,28 @@ class Car(object):
         self.driving = True
         while True:
             if self.position.nodeType == NodeType.sensor:
-                print "Post of car {0}, roads {1}, time {2}".format(self.carId, self.position.roads, self.env.now)
+                if self.type == CarType.intelligent:
+                    print "Post of car {0}, roads {1}, time {2}".format(self.carId, self.position.roads, self.env.now)
                 arc = self.position.outArcs[0]
                 new_speed = (1-arc.cost) * self.speed
                 period = DETECTOR_DISTANCE / self.speed
-                ApiInterface.post_reading(arc.nodeB.nodeId, new_speed, period, None)
+                delta = int(self.env.now * 3600000)
+                time = self.graph.simulation_start_time + delta
+                ApiInterface.post_reading(arc.nodeB.nodeId, new_speed, period, time)
                 self.readings += 1
             elif self.position.nodeType == NodeType.traffic_light or self.position.nodeType == NodeType.toll:
-                print "Interrupted spot reached by car {0}, roads {1}, time {2}".format(self.carId,self.position.roads, self.env.now)
+                #print "Interrupted spot reached by car {0}, roads {1}, time {2}".format(self.carId,self.position.roads, self.env.now)
                 arc = self.position.outArcs[0]
             elif self.position.nodeType == NodeType.ordinary:
-                print "Car {0} arrived at location {1}".format(self.carId, arc.nodeB.route)
+                #print "Car {0} arrived at location {1}".format(self.carId, arc.nodeB.route)
+
                 arc = arcs[0]
             elif self.position.nodeType == NodeType.fork:
-                print "Fork of car {0}, roads {1}, time {2}".format(self.carId, self.position.roads, self.env.now)
+                #print "Fork of car {0}, roads {1}, time {2}".format(self.carId, self.position.roads, self.env.now)
                 arcs = self.position.outArcs
 
                 if len(arcs) == 0:
-                    print "Car {0} arrived at destination".format(self.carId)
+                    #print "Car {0} arrived at destination".format(self.carId)
                     self.travelTime = env.now - self.startTime
                     self.driving = False
                     break
@@ -72,15 +76,18 @@ class Car(object):
                             arc = outArc
                             break
             elif self.position == self.destination:
-                print "Car {0} arrived at destination".format(self.carId)
+                #print "Car {0} arrived at destination".format(self.carId)
                 self.travelTime = env.now - self.startTime
                 self.driving = False
                 break
             elif self.position.nodeType == NodeType.finish:
-                print "Car {0} out of map".format(self.carId)
+                #print "Car {0} out of map".format(self.carId)
                 break
             yield self.env.timeout(self.calc_next_event_time(arc))
             self.position = arc.nodeB
+
+            if self.position.nodeType != NodeType.sensor:
+                self.last_known_position = self.position
 
 
     def calc_next_event_time(self, arc):
@@ -126,12 +133,15 @@ class Car(object):
         traffic_intensity = float(arrival_rate_foreach_server) / service_rate
         vehicles_in_system_per_window = float(traffic_intensity) / (1.0 - traffic_intensity)
         time_in_system = float(vehicles_in_system_per_window) / arrival_rate_foreach_server
-        return time_in_system
+        return float(time_in_system) / 3600
 
 
-    def average_time_in_tls(self, total_arrival_rate,red_light_duration, red_light_frequency):
+    def average_time_in_tls(self, total_arrival_rate, red_light_duration, red_light_frequency):
         """
-         Calculates the average time in a traffic light signal using vehicular flow theory.
+         Calculates the average time in a traffic light signal using queue theory
         """
-        effective_red_light = float(red_light_duration) / (red_light_duration + red_light_frequency)
-        return ROUTE_MAX_SERVICE * float(effective_red_light) / (ROUTE_MAX_SERVICE - total_arrival_rate)
+        service_rate = ROUTE_MAX_SERVICE * (red_light_frequency / float(red_light_duration + red_light_frequency))
+        traffic_intensity = float(total_arrival_rate) / service_rate
+        time_in_queue = traffic_intensity / float(service_rate * (1 - traffic_intensity))
+        service_time = red_light_duration * (red_light_duration / float(red_light_duration + red_light_frequency))
+        return float(time_in_queue + service_time) / 3600

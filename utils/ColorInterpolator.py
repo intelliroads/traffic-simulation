@@ -1,6 +1,6 @@
 class ColorInterpolator(object):
 
-    def __init__(self, start_hex="#00C911", end_hex="#E63030", mid_hex = "#FFFFFF"):
+    def __init__(self, start_hex="#00C911", end_hex="#E63030", mid_hex ="#FFFF00"):
         self.start_hex = start_hex
         self.end_hex = end_hex
         self.mid_hex = mid_hex
@@ -11,6 +11,9 @@ class ColorInterpolator(object):
         :param cost: Number between 0 and 1 that represents the cost of a route
         :return: RGB color that represents the cost
         '''
+
+        if cost == 0:
+            return self.hex_to_RGB("#FFFFFF")
 
         index = int(cost * 100)
         return self.hex_to_RGB(self.color_array[index])
