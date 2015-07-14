@@ -1,0 +1,52 @@
+FUNCTION_BLOCK intelliroads
+ 
+    VAR_INPUT
+        Velocidad   :   REAL; (* RANGE(0 .. 200) *)
+        Volumen     :   REAL; (* RANGE(0 .. 750) *)
+    END_VAR
+ 
+    VAR_OUTPUT
+        Costo : REAL; (* RANGE(0 .. 1) *)
+    END_VAR
+ 
+    FUZZIFY Velocidad
+        TERM Bajo   := (0,0) (0, 1) (80, 0) ;
+        TERM Medio  := (40, 0) (80, 1) (120, 0) ;
+        TERM Alto   := (80, 0) (160, 1) (160,0) ;
+    END_FUZZIFY
+ 
+    FUZZIFY Volumen
+        TERM Bajo   := (0,0) (0, 1) (325, 0)  ;
+        TERM Medio  := (163, 0) (325, 1) (488, 0) ;
+        TERM Alto   := (325, 0) (650, 1) (650,0) ;
+    END_FUZZIFY
+ 
+    DEFUZZIFY Costo
+        TERM Muy_Bajo   := (0, 0) (0.05, 1) (0.25, 0) ;
+        TERM Bajo       := (0, 0) (0.25, 1) (0.5, 0) ;
+        TERM Medio      := (0.25, 0) (0.5, 1) (0.75, 0) ;
+        TERM Alto       := (0.5, 0) (0.75, 1) (1, 0) ;
+        TERM Muy_Alto   := (0.75,0) (0.95, 1) (1, 0) ;
+     
+        ACCU:MAX;
+        METHOD: COG;(*MoM;*)
+        DEFAULT := 1; 
+    END_DEFUZZIFY
+ 
+    RULEBLOCK first
+        AND:MIN;
+        (*ACCU:MAX;*)
+
+        RULE 0 : IF (Velocidad IS Bajo) AND (Volumen IS Bajo) THEN (Costo IS Medio);
+        RULE 1 : IF (Velocidad IS Bajo) AND (Volumen IS Medio) THEN (Costo IS Alto);
+        RULE 2 : IF (Velocidad IS Bajo) AND (Volumen IS Alto) THEN (Costo IS Muy_Alto);
+        RULE 3 : IF (Velocidad IS Medio) AND (Volumen IS Bajo) THEN (Costo IS Bajo);
+        RULE 4 : IF (Velocidad IS Medio) AND (Volumen IS Medio) THEN (Costo IS Medio);
+        RULE 5 : IF (Velocidad IS Medio) AND (Volumen IS Alto) THEN (Costo IS Alto);
+        RULE 6 : IF (Velocidad IS Alto) AND (Volumen IS Bajo) THEN (Costo IS Muy_Bajo);
+        RULE 7 : IF (Velocidad IS Alto) AND (Volumen IS Medio) THEN (Costo IS Bajo);
+        RULE  8: IF (Velocidad IS Alto) AND (Volumen IS Alto) THEN (Costo IS Medio);   
+
+    END_RULEBLOCK
+ 
+END_FUNCTION_BLOCK

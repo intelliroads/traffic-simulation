@@ -1,4 +1,5 @@
 import random
+import math
 from api_interface.ApiInterface import ApiInterface
 from entities.Arc import ArcType
 from Node import NodeType
@@ -20,7 +21,8 @@ class Car(object):
         self.startTime = startTime
         self.travelTime = 0
         self.carId = carId
-        self.speed = random.gauss(AVG_SPEED, SPEED_SIGMA)
+        self.preferred_speed = random.gauss(AVG_SPEED, SPEED_SIGMA)
+        self.speed = self.preferred_speed
         self.position = position
         self.graph = graph
         self.process = env.process(self.simulate(env))
@@ -35,15 +37,16 @@ class Car(object):
 
         self.driving = True
         while True:
+
             if self.position.nodeType == NodeType.sensor:
-                if self.type == CarType.intelligent:
-                    print "Post of car {0}, roads {1}, time {2}".format(self.carId, self.position.roads, self.env.now)
+                #print "Post of car {0}, roads {1}, time {2}, sensor: {3}".format(self.carId, self.position.roads, self.env.now, self.position.nodeId)
                 arc = self.position.outArcs[0]
-                new_speed = (1-arc.cost) * self.speed
+                coef = (math.sqrt(1 - arc.cost**2) + 0.1)
+                self.speed = coef * self.preferred_speed
                 period = DETECTOR_DISTANCE / self.speed
                 delta = int(self.env.now * 3600000)
                 time = self.graph.simulation_start_time + delta
-                ApiInterface.post_reading(arc.nodeB.nodeId, new_speed, period, time)
+                ApiInterface.post_reading(self.position, self.speed, period, time)
                 self.readings += 1
             elif self.position.nodeType == NodeType.traffic_light or self.position.nodeType == NodeType.toll:
                 #print "Interrupted spot reached by car {0}, roads {1}, time {2}".format(self.carId,self.position.roads, self.env.now)
@@ -93,7 +96,7 @@ class Car(object):
     def calc_next_event_time(self, arc):
         """ Calculate the time until next node, recalculating the speed and the distance of the arc. """
         if arc.type == ArcType.uninterrupted:
-            time = self.average_time_uninterrupted(arc.distance, arc.cost, self.speed)
+            time = self.average_time_uninterrupted(arc.distance, self.speed)
         elif arc.type == ArcType.traffic_light:
             to_time = self.graph.simulation_start_time
             from_time = self.graph.simulation_start_time - 3600000
@@ -111,8 +114,8 @@ class Car(object):
         return time
 
 
-    def average_time_uninterrupted(self,arc_distance, arc_cost, car_speed):
-        return arc_distance / ((1-arc_cost) * float(car_speed))
+    def average_time_uninterrupted(self, arc_distance, car_speed):
+        return float(arc_distance) / car_speed
 
 
     def average_time_in_toll(self, arrival_rate, service_rate, servers):

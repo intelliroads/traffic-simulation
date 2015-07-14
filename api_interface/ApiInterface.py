@@ -14,6 +14,7 @@ class ApiInterface(object):
     SENSORS = BASE_URL + "sensors"
     SPEED = BASE_URL + "roads/{0}/mean-time-speed"
     VOLUME = BASE_URL + "roads/{0}/volume"
+    DELTA_VOLUME = BASE_URL + "roads/{0}/delta-volume"
 
     @staticmethod
     def get(url, payload):
@@ -53,8 +54,12 @@ class ApiInterface(object):
         payload = {'fromKm': from_km, 'toKm': to_km, 'fromTime': from_time, 'toTime': to_time}
         return  ApiInterface.get(ApiInterface.SPEED.format(road_id), payload)
 
-
     @staticmethod
     def get_volume(road_id, km, from_time, to_time):
         payload = {'km': km, 'fromTime': from_time, 'toTime': to_time}
         return ApiInterface.get(ApiInterface.VOLUME.format(road_id), payload)
+
+    @staticmethod
+    def get_delta_volume(road_id, from_km, to_km, from_time, to_time):
+        payload = {'fromKm': from_km, 'toKm': to_km, 'fromTime': from_time, 'toTime': to_time}
+        return ApiInterface.get(ApiInterface.DELTA_VOLUME.format(road_id), payload)

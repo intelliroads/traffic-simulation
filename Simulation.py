@@ -10,14 +10,14 @@ from utils import ColorInterpolator
 from PyQt4 import QtGui
 from GUI import Drawer
 
-NUM_CARS = 0
+NUM_CARS = 2000
 
 def createGraph(env, simulation_start_time):
     return Graph(env, simulation_start_time)
 
 
 def simulate(cars):
-    env.run(until=10)
+    env.run(until=1000)
 
     print "Simulation finished"
     random_cars = [car.travelTime for car in cars if car.type == CarType.random]
@@ -43,16 +43,16 @@ env = simpy.Environment()
 
 # Save simulation starttime
 simulation_start_time = int((datetime.now() - datetime(1970,1,1)).total_seconds() * 1000)
-
+print simulation_start_time
 graph = createGraph(env, simulation_start_time)
 color_interpolator = ColorInterpolator.ColorInterpolator()
 app = QtGui.QApplication(sys.argv)
 
 car_nro = 0
-cars = [Car(env, i + car_nro, graph.getFirstNode(), graph, 0, CarType.random) for i in range(50)]
-car_nro += 50
-cars.extend([Car(env, i + car_nro, graph.getFirstNode(), graph, 0, CarType.intelligent, graph.getLastNode()) for i in range(50)])
-car_nro += 100
+cars = [Car(env, i + car_nro, graph.getFirstNode(), graph, 0, CarType.random) for i in range(650)]
+car_nro += 650
+cars.extend([Car(env, i + car_nro, graph.getFirstNode(), graph, 0, CarType.random) for i in range(150)])
+car_nro += 150
 cars.extend([Car(env, i + car_nro,  graph.getFirstNode(), graph, random.expovariate(0.05), CarType.random) for i in range(NUM_CARS)])
 car_nro += NUM_CARS
 

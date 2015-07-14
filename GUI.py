@@ -67,7 +67,6 @@ class Drawer(QtGui.QWidget):
         qp.setPen(pen)
         qp.drawLine((x*WIDTH_CONSTANT) + (NODE_RADIUS/2) + WINDOW_LEFT_PADDING, (-y*HEIGHT_CONSTANT) + (NODE_RADIUS/2) + WINDOW_TOP_PADDING, (x2*WIDTH_CONSTANT) + (NODE_RADIUS/2) + WINDOW_LEFT_PADDING, (-y2*HEIGHT_CONSTANT)+ (NODE_RADIUS/2) + WINDOW_TOP_PADDING)
 
-
     def paintGrass(self, qp):
         # Paint grass
         size = self.size()

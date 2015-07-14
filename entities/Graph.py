@@ -128,8 +128,6 @@ class Graph(object):
             if len(node.outArcs) == 0:
                 return node
 
-    def getLastNode(self):
-        return self.nodes[len(self.nodes) -1]
 
     def recalculate_graph(self):
         self.repaining = True
@@ -149,7 +147,7 @@ class Graph(object):
 
                 delta = int(self.env.now * 3600000)
                 to_time = self.simulation_start_time + delta
-                from_time = self.simulation_start_time + delta - 3600000
+                from_time = to_time - 3600000
 
                 road = None
                 for key in arc.nodeB.roads.keys():
@@ -157,17 +155,23 @@ class Graph(object):
                         road = key
                         break
 
-                volume = ApiInterface.get_volume(road, arc.nodeA.roads[road], from_time, to_time)
                 if (current_node.nodeType == NodeType.traffic_light and arc.nodeB.nodeType == NodeType.traffic_light) \
                         or (current_node.nodeType == NodeType.toll and arc.nodeB.nodeType == NodeType.toll):
+                    volume = ApiInterface.get_volume(road, arc.nodeB.roads[road], from_time, to_time)
                     arc.cost = volume
                 else:
+                    #volumefrom = ApiInterface.get_volume(road, current_node.roads[road], from_time, to_time)
+                    #volumeto = ApiInterface.get_volume(road, arc.nodeB.roads[road], from_time, to_time)
+                    delta_volume = ApiInterface.get_delta_volume(road, current_node.roads[road], arc.nodeB.roads[road], from_time, to_time)
+                    if road == '2' and current_node.roads[road] == 0:
+                        print "road: {0}, fromKm: {1}, toKm: {2}, deltaVolume: {3}, fromTime: {4}, toTime: {5}, envnow: {6}".format(road, current_node.roads[road], arc.nodeB.roads[road], delta_volume, from_time, to_time, self.env.now)
+                    #print "volume_from: {0}, volume_to: {1}, delta_volume: {2}".format(volumefrom, volumeto, delta_volume)
                     speed = ApiInterface.get_speed(road, current_node.roads[road], arc.nodeB.roads[road], from_time, to_time)
 
-                    if speed == 0 or volume == 0:
+                    if speed == 0:
                         cost = 0
                     else:
-                        cost = CostCalculator.calculeUninterruptedCost(speed, volume)
+                        cost = CostCalculator.calculeUninterruptedCost(speed, delta_volume)
 
                     #print "{0}, {1}, {2}".format(speed, volume, cost)
 
