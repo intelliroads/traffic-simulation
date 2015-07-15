@@ -1,13 +1,19 @@
-import json
+import time
+
 import requests
+
 from api_interface.Reading import Reading
 from api_interface.Spot import Spot
 from api_interface.Sensor import Sensor
-import time
+
 
 current_milli_time = lambda: int(round(time.time() * 1000))
 
+
 class ApiInterface(object):
+    """
+    This class is used to communicate the simulation with the REST API
+    """
     BASE_URL = "http://127.0.0.1:3000/"
     READING = BASE_URL + "readings"
     SPOTS = BASE_URL + "spots"
@@ -52,7 +58,7 @@ class ApiInterface(object):
     @staticmethod
     def get_speed(road_id, from_km, to_km, from_time, to_time):
         payload = {'fromKm': from_km, 'toKm': to_km, 'fromTime': from_time, 'toTime': to_time}
-        return  ApiInterface.get(ApiInterface.SPEED.format(road_id), payload)
+        return ApiInterface.get(ApiInterface.SPEED.format(road_id), payload)
 
     @staticmethod
     def get_volume(road_id, km, from_time, to_time):

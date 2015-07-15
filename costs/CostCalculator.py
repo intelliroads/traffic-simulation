@@ -1,8 +1,12 @@
-import fuzzy.storage.fcl.Reader
 import os
+
+import fuzzy.storage.fcl.Reader
 
 
 class CostCalculator(object):
+    """
+    This class is used to calculate uninterrupted arcs costs using fuzzy logic
+    """
     global system
 
     dir = os.path.dirname(__file__)

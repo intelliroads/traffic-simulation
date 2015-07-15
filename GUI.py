@@ -1,7 +1,9 @@
 import random
+
 from PyQt4 import QtGui, QtCore
 from entities.Node import NodeType
 from entities.Car import CarType
+
 
 WINDOW_LEFT_PADDING = 80
 WINDOW_TOP_PADDING = 380
@@ -14,17 +16,18 @@ LINE_WEIGHT = 8
 
 ICON_DIMENSION = 35
 
-reader= QtGui.QImageReader("semaphore.png")
-semImage=reader.read()
+reader = QtGui.QImageReader("semaphore.png")
+semImage = reader.read()
 
-reader= QtGui.QImageReader("toll.png")
-tollImage=reader.read()
+reader = QtGui.QImageReader("toll.png")
+tollImage = reader.read()
 
-reader= QtGui.QImageReader("car.png")
-carImage=reader.read()
+reader = QtGui.QImageReader("car.png")
+carImage = reader.read()
+
 
 class Drawer(QtGui.QWidget):
-    
+    """Used to draw the roads graph"""
     def __init__(self, graph, color_interpolator, cars):
         super(Drawer, self).__init__()
         self.initUI()
@@ -35,8 +38,8 @@ class Drawer(QtGui.QWidget):
         self.color_interpolator = color_interpolator
         self.cars = cars
 
-    def initUI(self):      
-        #self.showFullScreen()
+    def initUI(self):
+        # self.showFullScreen()
         self.showMaximized()
         self.setWindowTitle('Graph')
         self.show()
@@ -46,46 +49,55 @@ class Drawer(QtGui.QWidget):
         qp.setFont(QtGui.QFont('Decorative', 10))
         qp.drawText(event.rect(), QtCore.Qt.AlignCenter, text)
 
-    def drawImage(self, qp, image,  x, y):
-        qp.drawImage(QtCore.QRect((x*WIDTH_CONSTANT) - (ICON_DIMENSION/2) + WINDOW_LEFT_PADDING,(-y*HEIGHT_CONSTANT) - (ICON_DIMENSION/2) + WINDOW_TOP_PADDING, ICON_DIMENSION, ICON_DIMENSION), image)
+    def drawImage(self, qp, image, x, y):
+        qp.drawImage(QtCore.QRect((x * WIDTH_CONSTANT) - (ICON_DIMENSION / 2) + WINDOW_LEFT_PADDING,
+                                  (-y * HEIGHT_CONSTANT) - (ICON_DIMENSION / 2) + WINDOW_TOP_PADDING, ICON_DIMENSION,
+                                  ICON_DIMENSION), image)
 
     def drawNode(self, qp, x, y, color):
         qp.setPen(color)
         qp.setBrush(color)
-        qp.drawEllipse((x*WIDTH_CONSTANT) + WINDOW_LEFT_PADDING, (-y*HEIGHT_CONSTANT) + WINDOW_TOP_PADDING, NODE_RADIUS, NODE_RADIUS)
-        
+        qp.drawEllipse((x * WIDTH_CONSTANT) + WINDOW_LEFT_PADDING, (-y * HEIGHT_CONSTANT) + WINDOW_TOP_PADDING,
+                       NODE_RADIUS, NODE_RADIUS)
+
     def drawPoint(self, qp, x, y, color):
         qp.setPen(color)
-        qp.drawPoint(x, y)    
+        qp.drawPoint(x, y)
 
-    def drawLine(self, qp, x, y, x2, y2,  color, color2):
+    def drawLine(self, qp, x, y, x2, y2, color, color2):
         pen = QtGui.QPen(color, LINE_WEIGHT, QtCore.Qt.SolidLine)
         qp.setPen(pen)
-        qp.drawLine((x*WIDTH_CONSTANT) + (NODE_RADIUS/2) + WINDOW_LEFT_PADDING, (-y*HEIGHT_CONSTANT) + (NODE_RADIUS/2) + WINDOW_TOP_PADDING, (x2*WIDTH_CONSTANT) + (NODE_RADIUS/2) + WINDOW_LEFT_PADDING, (-y2*HEIGHT_CONSTANT)+ (NODE_RADIUS/2) + WINDOW_TOP_PADDING)
+        qp.drawLine((x * WIDTH_CONSTANT) + (NODE_RADIUS / 2) + WINDOW_LEFT_PADDING,
+                    (-y * HEIGHT_CONSTANT) + (NODE_RADIUS / 2) + WINDOW_TOP_PADDING,
+                    (x2 * WIDTH_CONSTANT) + (NODE_RADIUS / 2) + WINDOW_LEFT_PADDING,
+                    (-y2 * HEIGHT_CONSTANT) + (NODE_RADIUS / 2) + WINDOW_TOP_PADDING)
 
-        pen = QtGui.QPen(color2, LINE_WEIGHT-4, QtCore.Qt.SolidLine)
+        pen = QtGui.QPen(color2, LINE_WEIGHT - 4, QtCore.Qt.SolidLine)
         qp.setPen(pen)
-        qp.drawLine((x*WIDTH_CONSTANT) + (NODE_RADIUS/2) + WINDOW_LEFT_PADDING, (-y*HEIGHT_CONSTANT) + (NODE_RADIUS/2) + WINDOW_TOP_PADDING, (x2*WIDTH_CONSTANT) + (NODE_RADIUS/2) + WINDOW_LEFT_PADDING, (-y2*HEIGHT_CONSTANT)+ (NODE_RADIUS/2) + WINDOW_TOP_PADDING)
+        qp.drawLine((x * WIDTH_CONSTANT) + (NODE_RADIUS / 2) + WINDOW_LEFT_PADDING,
+                    (-y * HEIGHT_CONSTANT) + (NODE_RADIUS / 2) + WINDOW_TOP_PADDING,
+                    (x2 * WIDTH_CONSTANT) + (NODE_RADIUS / 2) + WINDOW_LEFT_PADDING,
+                    (-y2 * HEIGHT_CONSTANT) + (NODE_RADIUS / 2) + WINDOW_TOP_PADDING)
 
     def paintGrass(self, qp):
         # Paint grass
         size = self.size()
         for i in range(700000):
             color = QtGui.QColor(51, 204, 51)
-            x = random.randint(1, size.width()-1)
-            y = random.randint(1, size.height()-1)
+            x = random.randint(1, size.width() - 1)
+            y = random.randint(1, size.height() - 1)
             self.drawPoint(qp, x, y, color)
 
         for i in range(550000):
             color = QtGui.QColor(0, 102, 0)
-            x = random.randint(1, size.width()-1)
-            y = random.randint(1, size.height()-1)
+            x = random.randint(1, size.width() - 1)
+            y = random.randint(1, size.height() - 1)
             self.drawPoint(qp, x, y, color)
 
         for i in range(250000):
             color = QtGui.QColor(102, 255, 51)
-            x = random.randint(1, size.width()-1)
-            y = random.randint(1, size.height()-1)
+            x = random.randint(1, size.width() - 1)
+            y = random.randint(1, size.height() - 1)
             self.drawPoint(qp, x, y, color)
 
     def paintGraph(self, qp):
@@ -112,7 +124,8 @@ class Drawer(QtGui.QWidget):
                             arc_a = temp_arc
                     cost_color = self.color_interpolator.get_color(arc_a.cost)
                     color = QtGui.QColor(cost_color[0], cost_color[1], cost_color[2])
-                    self.drawLine(qp, int(current_node.x), int(current_node.y), int(arc.nodeB.x), int(arc.nodeB.y), darkgray, color)
+                    self.drawLine(qp, int(current_node.x), int(current_node.y), int(arc.nodeB.x), int(arc.nodeB.y),
+                                  darkgray, color)
                     current_node = arc.nodeB
                 if arc.nodeB not in visited_nodes:
                     arcs.extend(arc.nodeB.outArcs)
@@ -130,16 +143,17 @@ class Drawer(QtGui.QWidget):
                 if car.type == CarType.intelligent:
                     self.drawImage(qp, carImage, int(car.last_known_position.x), int(car.last_known_position.y))
         except:
-            print ("Graph not initialized")
+            print("Graph not initialized")
 
     def paintEvent(self, e=None):
         qp = QtGui.QPainter()
         qp.begin(self)
-        #self.paintGrass(qp)
+        # self.paintGrass(qp)
         self.paintGraph(qp)
         try:
-            self.drawText(e, qp, "Time: {0}, Readings: {1}, Driving: {2}".format(self.time, self.readings, self.driving))
+            self.drawText(e, qp,
+                          "Time: {0}, Readings: {1}, Driving: {2}".format(self.time, self.readings, self.driving))
         except:
-            print ("Time")
+            print("Time")
         qp.end()
 

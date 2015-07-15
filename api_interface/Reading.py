@@ -1,6 +1,10 @@
 import json
 
+
 class Reading(object):
+    """
+    Sensor reading provided by the api
+    """
 
     def __init__(self, sensor_id, speed, period, time):
         self.sensor_id = sensor_id

@@ -1,9 +1,16 @@
+import unicodedata
+
 from api_interface.Road import Road
 from api_interface.RedLight import RedLight
 from api_interface.Toll import Toll
-import unicodedata
+
 
 class Spot(object):
+    """
+    Spot of interest provided by the api, this spot can represent a toll, traffic light, fork or another ordinary
+    spot of interest.
+    """
+
     def __init__(self, spotJSON):
         self.id = spotJSON["_id"]
         self.type = spotJSON["type"]
@@ -24,4 +31,4 @@ class Spot(object):
                 return road.kilometer
 
     def __str__(self):
-        return  "Spot - Id {0}, Type {1}, Roads {2}".format(self.id, self.type, self.roads)
+        return "Spot - Id {0}, Type {1}, Roads {2}".format(self.id, self.type, self.roads)

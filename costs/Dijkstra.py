@@ -1,14 +1,19 @@
 from Queue import Queue
+
+
 def dijkstra(car):
+    """Function used to find the shortest path of a car from a source node to a destination node
+
+        Keyword arguments:
+        car -- The vehicle that needs to go from source node to destination node
+    """
     src = car.position
     dest = car.destination
     graph = car.graph
-    """ calculates a shortest path tree routed in src
-    """
     # a few sanity checks
-    visited=[]
-    distances={}
-    predecessors={}
+    visited = []
+    distances = {}
+    predecessors = {}
     if src not in graph.nodes:
         raise TypeError('the root of the shortest path tree cannot be found in the graph')
     if dest not in graph.nodes:
@@ -23,7 +28,7 @@ def dijkstra(car):
             path = []
             pred = dest
             while pred != None:
-                path.insert(0,pred)
+                path.insert(0, pred)
                 pred = predecessors.get(pred.nodeId, None)
 
             return path
