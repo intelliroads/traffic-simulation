@@ -12,7 +12,7 @@ class ApiInterface(object):
     READING = BASE_URL + "readings"
     SPOTS = BASE_URL + "spots"
     SENSORS = BASE_URL + "sensors"
-    SPEED = BASE_URL + "roads/{0}/mean-time-speed"
+    SPEED = BASE_URL + "roads/{0}/mean-space-speed"
     VOLUME = BASE_URL + "roads/{0}/volume"
     DELTA_VOLUME = BASE_URL + "roads/{0}/delta-volume"
 

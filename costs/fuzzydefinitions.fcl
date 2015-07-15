@@ -2,7 +2,7 @@ FUNCTION_BLOCK intelliroads
 
     VAR_INPUT
         Speed       : REAL; (* RANGE(0 .. 180) *)
-        DeltaVolume : REAL; (* RANGE(-750 .. 750) *)
+        DeltaVolume : REAL; (* RANGE(-650 .. 650) *)
     END_VAR
 
     VAR_OUTPUT
@@ -10,15 +10,15 @@ FUNCTION_BLOCK intelliroads
     END_VAR
 
     FUZZIFY Speed
-        TERM Low    := (0, 0) (0, 1) (90, 0) ;
-        TERM Medium := (60, 0) (90, 1) (120, 0) ;
-        TERM High   := (90, 0) (180, 1) (180,0) ;
+        TERM Low   := (0,0) (0, 1) (80, 0) ;
+        TERM Medium  := (40, 0) (80, 1) (120, 0) ;
+        TERM High   := (80, 0) (180, 1) (180,0) ;
     END_FUZZIFY
 
     FUZZIFY DeltaVolume
-        TERM Negative := (-750, 1) (-750, 0) (0, 0)  ;
-        TERM Null     := (-375, 0) (0, 1) (375, 0) ;
-        TERM Positive := (0, 0) (750, 1) (750, 0) ;
+        TERM Negative := (-650, 0) (-650, 1) (0, 0)  ;
+        TERM Null     := (-300, 0) (0, 1) (300, 0) ;
+        TERM Positive := (0, 0) (650, 1) (650, 0) ;
     END_FUZZIFY
 
     DEFUZZIFY Cost
@@ -45,7 +45,7 @@ FUNCTION_BLOCK intelliroads
         RULE 5 : IF (Speed IS Medium) AND (DeltaVolume IS Positive) THEN (Cost IS Low);
         RULE 6 : IF (Speed IS High) AND (DeltaVolume IS Negative) THEN (Cost IS Medium);
         RULE 7 : IF (Speed IS High) AND (DeltaVolume IS Null) THEN (Cost IS Low);
-        RULE  8: IF (Speed IS High) AND (DeltaVolume IS Positive) THEN (Cost IS VeryLow);
+        RULE 8 : IF (Speed IS High) AND (DeltaVolume IS Positive) THEN (Cost IS VeryLow);
 
     END_RULEBLOCK
  

@@ -163,8 +163,8 @@ class Graph(object):
                     #volumefrom = ApiInterface.get_volume(road, current_node.roads[road], from_time, to_time)
                     #volumeto = ApiInterface.get_volume(road, arc.nodeB.roads[road], from_time, to_time)
                     delta_volume = ApiInterface.get_delta_volume(road, current_node.roads[road], arc.nodeB.roads[road], from_time, to_time)
-                    if road == '2' and current_node.roads[road] == 0:
-                        print "road: {0}, fromKm: {1}, toKm: {2}, deltaVolume: {3}, fromTime: {4}, toTime: {5}, envnow: {6}".format(road, current_node.roads[road], arc.nodeB.roads[road], delta_volume, from_time, to_time, self.env.now)
+                    #if road == '2' and current_node.roads[road] == 0:
+                    #    print "road: {0}, fromKm: {1}, toKm: {2}, deltaVolume: {3}, fromTime: {4}, toTime: {5}, envnow: {6}".format(road, current_node.roads[road], arc.nodeB.roads[road], delta_volume, from_time, to_time, self.env.now)
                     #print "volume_from: {0}, volume_to: {1}, delta_volume: {2}".format(volumefrom, volumeto, delta_volume)
                     speed = ApiInterface.get_speed(road, current_node.roads[road], arc.nodeB.roads[road], from_time, to_time)
 

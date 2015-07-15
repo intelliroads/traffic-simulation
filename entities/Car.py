@@ -6,10 +6,10 @@ from Node import NodeType
 from enum import Enum
 import costs.Dijkstra
 
-DETECTOR_DISTANCE = 1.5
+DETECTOR_DISTANCE = 0.0015
 ROUTE_MAX_SERVICE = 650
-AVG_SPEED = 100
-SPEED_SIGMA = 15
+AVG_SPEED = 110
+SPEED_SIGMA = 10
 
 class CarType(Enum):
     random = 1
