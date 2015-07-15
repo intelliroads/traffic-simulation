@@ -41,7 +41,7 @@ def simulate(cars):
 
 def repaint_graph(drawer, graph, ):
     while True:
-        if not graph.repaining:
+        if not graph.repainting:
             time.sleep(1)
             drawer.readings = sum([car.readings for car in cars])
             drawer.driving = sum([car.driving for car in cars])
