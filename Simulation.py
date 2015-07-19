@@ -11,6 +11,7 @@ from entities.Car import Car, CarType
 from utils import ColorInterpolator
 from PyQt4 import QtGui
 from GUI import Drawer
+import copy
 
 
 NUM_CARS = 2300
@@ -81,7 +82,18 @@ car_nro += NUM_CARS
 cars.extend(
     [Car(env, i + car_nro, graph.getFirstNode(), graph, random.uniform(8, 13), CarType.intelligent, graph.getLastNode())
      for i in range(300)])
-car_nro += 200
+car_nro += 300
+"""
+#Upper path
+forced_path1 = [0,0,0,0,0]
+#Middle path
+forced_path2 = [0,0,0,1,1]
+#Bottom path
+forced_path3 = [0,0,0,0,1]
+last_node = graph.getLastNode();
+car_nro = 0
+cars = [Car(env, i + car_nro, graph.getFirstNode(), graph, 0, CarType.forced, last_node, copy.copy(forced_path1)) for i in range(1)]
+"""
 
 # Start simulation in other thread
 thread.start_new_thread(simulate, (cars,))

@@ -47,7 +47,7 @@ class Drawer(QtGui.QWidget):
     def drawText(self, event, qp, text):
         qp.setPen(QtGui.QColor(0, 0, 0))
         qp.setFont(QtGui.QFont('Decorative', 10))
-        qp.drawText(event.rect(), QtCore.Qt.AlignCenter, text)
+        qp.drawText(event.rect(), QtCore.Qt.AlignRight, text)
 
     def drawImage(self, qp, image, x, y):
         qp.drawImage(QtCore.QRect((x * WIDTH_CONSTANT) - (ICON_DIMENSION / 2) + WINDOW_LEFT_PADDING,
@@ -152,7 +152,7 @@ class Drawer(QtGui.QWidget):
         self.paintGraph(qp)
         try:
             self.drawText(e, qp,
-                          "Time: {0}, Readings: {1}, Driving: {2}".format(self.time, self.readings, self.driving))
+                          "Time: {0}\r\nReadings: {1}\r\nDriving: {2}\r\n".format(self.time, self.readings, self.driving))
         except:
             print("Time")
         qp.end()

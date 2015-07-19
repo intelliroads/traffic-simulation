@@ -21,14 +21,16 @@ class CarType(Enum):
     """Possible types of cars:
     - random: When faced with a decision, the car will take a random road.
     - intelligent: When faced with a decision, the car will take the optimal road based on Dijkstra's
-    algorithms result."""
+    algorithms result.
+    - forced: The car will always take the path defined in his forcedPath attribute"""
     random = 1
     intelligent = 2
+    forced = 3
 
 
 class Car(object):
     """Representation of a car driving within the route."""
-    def __init__(self, env, carId, position, graph, startTime, type, destination=None):
+    def __init__(self, env, carId, position, graph, startTime, type, destination=None, forced_path = None):
         self.env = env
         self.startTime = startTime
         self.travelTime = 0
@@ -43,6 +45,7 @@ class Car(object):
         self.readings = 0
         self.driving = False
         self.last_known_position = self.position
+        self.forced_path = forced_path
 
     def simulate(self, env):
         """Simulation of the trip of a car.
@@ -86,13 +89,19 @@ class Car(object):
                         if outArc.nodeB.nodeId == destinationNode.nodeId:
                             arc = outArc
                             break
+                elif self.type == CarType.forced:
+                    index = 0
+                    if len(arcs) > 0:
+                        index = self.forced_path.pop()
+                    arc = arcs[index]
             elif self.position == self.destination:
                 self.travelTime = env.now - self.startTime
                 self.driving = False
                 break
             elif self.position.nodeType == NodeType.finish:
                 break
-            yield self.env.timeout(self.calc_next_event_time(arc))
+            delay = self.calc_next_event_time(arc)
+            yield self.env.timeout(delay if delay > 0 else 0)
             self.position = arc.nodeB
             if self.position.nodeType != NodeType.sensor:
                 self.last_known_position = self.position
