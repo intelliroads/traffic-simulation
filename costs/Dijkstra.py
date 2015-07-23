@@ -1,4 +1,5 @@
 from Queue import Queue
+import math
 
 
 def dijkstra(car):
@@ -41,7 +42,7 @@ def dijkstra(car):
             for arc in src.outArcs:
                 neighbor = arc.nodeB
                 if neighbor not in visited:
-                    new_distance = car.calc_next_event_time(arc) + distances.get(src.nodeId, float('inf'))
+                    new_distance = car.calc_next_event_time(arc, car.speed * (math.sqrt(1 - arc.cost ** 2) + 0.1)) + distances.get(src.nodeId, float('inf'))
                     if new_distance <= distances.get(neighbor.nodeId, float('inf')):
                         distances[neighbor.nodeId] = new_distance
                         predecessors[neighbor.nodeId] = src

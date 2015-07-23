@@ -47,6 +47,7 @@ class Car(object):
         self.last_known_position = self.position
         self.forced_path = forced_path
         self.forks_passed = 0
+        self.distance_traveled = 0
 
     def simulate(self, env):
         """Simulation of the trip of a car.
@@ -76,6 +77,7 @@ class Car(object):
                 if len(arcs) == 0:
                     self.travelTime = env.now - self.startTime
                     self.driving = False
+                    print self.distance_traveled
                     break
                 if self.type == CarType.random:
                     if len(arcs) == 1:
@@ -100,23 +102,25 @@ class Car(object):
             elif self.position == self.destination:
                 self.travelTime = env.now - self.startTime
                 self.driving = False
+                print self.distance_traveled
                 break
             elif self.position.nodeType == NodeType.finish:
                 break
-            delay = self.calc_next_event_time(arc)
+            self.distance_traveled += arc.distance
+            delay = self.calc_next_event_time(arc, self.speed)
             yield self.env.timeout(delay if delay > 0 else 0)
             self.position = arc.nodeB
             if self.position.nodeType != NodeType.sensor:
                 self.last_known_position = self.position
 
 
-    def calc_next_event_time(self, arc):
+    def calc_next_event_time(self, arc , speed):
         """ Calculate the time until next node, recalculating the speed and the distance of the arc.
 
         Keyword arguments:
         arc -- Arc traversed by the car."""
         if arc.type == ArcType.uninterrupted:
-            time = self.average_time_uninterrupted(arc.distance, self.speed)
+            time = self.average_time_uninterrupted(arc.distance, speed)
         elif arc.type == ArcType.traffic_light:
             to_time = self.graph.simulation_start_time
             from_time = self.graph.simulation_start_time - 3600000

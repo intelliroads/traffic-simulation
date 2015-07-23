@@ -33,8 +33,6 @@ def simulate(cars):
 
     intelligent_cars = [car.travelTime for car in cars if car.type == CarType.intelligent and car.travelTime > 0]
     avg_intelligent_cars = float(sum(intelligent_cars)) / len(intelligent_cars)
-
-    print
     avg_random_cars
     print
     avg_intelligent_cars
@@ -61,6 +59,7 @@ color_interpolator = ColorInterpolator.ColorInterpolator()
 app = QtGui.QApplication(sys.argv)
 
 
+"""
 car_nro = 0
 cars = [Car(env, i + car_nro, graph.getFirstNode(), graph, 0, CarType.random) for i in range(1000)]
 car_nro += 1000
@@ -90,8 +89,33 @@ upper_path = [0,0,0,0,0]
 middle_path = [1,1,0,0,0]
 bottom_path = [1,0,0,0,0]
 last_node = graph.getLastNode();
+
 car_nro = 0
-cars = [Car(env, i + car_nro, graph.getFirstNode(), graph, 0, CarType.forced, last_node, bottom_path) for i in range(1)]
+cars = [Car(env, i + car_nro, graph.getFirstNode(), graph, 0, CarType.forced, last_node, bottom_path) for i in range(1000)]
+car_nro += 1000
+cars.extend([Car(env, i + car_nro, graph.getFirstNode(), graph, 2.5, CarType.forced, last_node, middle_path) for i in range(800)])
+car_nro += 800
+cars.extend([Car(env, i + car_nro, graph.getFirstNode(), graph, 5.0, CarType.forced, last_node, bottom_path) for i in range(800)])
+car_nro += 800
+cars.extend([Car(env, i + car_nro, graph.getFirstNode(), graph, 8.5, CarType.forced, last_node, middle_path) for i in range(750)])
+car_nro += 750
+cars.extend([Car(env, i + car_nro, graph.getFirstNode(), graph, 11.0, CarType.forced, last_node, bottom_path) for i in range(750)])
+car_nro += 750
+cars.extend([Car(env, i + car_nro, graph.getFirstNode(), graph, 13.0, CarType.forced, last_node, middle_path) for i in range(400)])
+car_nro += 400
+
+cars.extend(
+    [Car(env, i + car_nro, graph.getFirstNode(), graph, random.uniform(0, SIMULATION_TIME - 3), CarType.forced, last_node, middle_path) for i in
+     range(NUM_CARS)])
+car_nro += NUM_CARS
+
+cars.extend(
+    [Car(env, i + car_nro, graph.getFirstNode(), graph, random.uniform(8, 13), CarType.intelligent, graph.getLastNode())
+     for i in range(300)])
+car_nro += 300
+"""
+car_nro = 0
+cars = [Car(env, i + car_nro, graph.getFirstNode(), graph, 0, CarType.forced, last_node, upper_path) for i in range(1)]
 """
 
 # Start simulation in other thread
