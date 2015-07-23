@@ -60,6 +60,7 @@ graph = createGraph(env, simulation_start_time)
 color_interpolator = ColorInterpolator.ColorInterpolator()
 app = QtGui.QApplication(sys.argv)
 
+
 car_nro = 0
 cars = [Car(env, i + car_nro, graph.getFirstNode(), graph, 0, CarType.random) for i in range(1000)]
 car_nro += 1000
@@ -84,15 +85,13 @@ cars.extend(
      for i in range(300)])
 car_nro += 300
 """
-#Upper path
-forced_path1 = [0,0,0,0,0]
-#Middle path
-forced_path2 = [0,0,0,1,1]
-#Bottom path
-forced_path3 = [0,0,0,0,1]
+
+upper_path = [0,0,0,0,0]
+middle_path = [1,1,0,0,0]
+bottom_path = [1,0,0,0,0]
 last_node = graph.getLastNode();
 car_nro = 0
-cars = [Car(env, i + car_nro, graph.getFirstNode(), graph, 0, CarType.forced, last_node, copy.copy(forced_path1)) for i in range(1)]
+cars = [Car(env, i + car_nro, graph.getFirstNode(), graph, 0, CarType.forced, last_node, bottom_path) for i in range(1)]
 """
 
 # Start simulation in other thread

@@ -46,6 +46,7 @@ class Car(object):
         self.driving = False
         self.last_known_position = self.position
         self.forced_path = forced_path
+        self.forks_passed = 0
 
     def simulate(self, env):
         """Simulation of the trip of a car.
@@ -91,9 +92,11 @@ class Car(object):
                             break
                 elif self.type == CarType.forced:
                     index = 0
-                    if len(arcs) > 0:
-                        index = self.forced_path.pop()
+                    #Safety checks
+                    if len(self.forced_path) > self.forks_passed and len(arcs) > self.forced_path[self.forks_passed]:
+                        index = self.forced_path[self.forks_passed]
                     arc = arcs[index]
+                    self.forks_passed += 1
             elif self.position == self.destination:
                 self.travelTime = env.now - self.startTime
                 self.driving = False
